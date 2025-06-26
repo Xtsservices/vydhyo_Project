@@ -712,11 +712,11 @@ const AddWalkInPatient: React.FC = () => {
               </div>
 
               {/* Error Display */}
-              {apiError && (
+              {/* {apiError && (
                 <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
                   <p className="text-red-700 text-sm">{apiError}</p>
                 </div>
-              )}
+              )} */}
 
               {/* Success Message for Found User */}
               {userFound && (
