@@ -300,9 +300,9 @@ const AddWalkInPatient: React.FC = () => {
           setApiError("");
         } else {
           // Multiple users found, show dropdown
-          setApiError(
-            "Multiple patients found with this mobile number. Please select one."
-          );
+          // setApi(
+          //   " Please select one Patient"
+          // );
         }
       } else if (
         searchResult.success &&
