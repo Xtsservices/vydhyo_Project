@@ -1,172 +1,150 @@
+// components/SiderHeader.tsx
 "use client";
+import React, { useEffect, useState } from "react";
+import { Layout, Avatar, Menu, Tag, Typography } from "antd";
+import {
+  UserOutlined,
+  CalendarOutlined,
+  DashboardOutlined,
+  FileTextOutlined,
+  TeamOutlined,
+  SettingOutlined,
+  MailOutlined,
+} from "@ant-design/icons";
+import { useRouter } from "next/navigation";
 
-import React from "react";
+const { Sider } = Layout;
+const { Title, Text } = Typography;
 
-const menuItems = [
-  { label: "Dashboard", icon: "fa-solid fa-house", active: true },
-  { label: "Requests", icon: "fa-solid fa-envelope" },
-  { label: "Appointments", icon: "fa-solid fa-calendar-check" },
-  { label: "Available Timings", icon: "fa-solid fa-clock" },
-  { label: "My Patients", icon: "fa-solid fa-user-injured" },
-  { label: "Specialists & Services", icon: "fa-solid fa-stethoscope" },
-  { label: "Reviews", icon: "fa-solid fa-star" },
-  { label: "Accounts", icon: "fa-solid fa-wallet" },
-  { label: "Invoices", icon: "fa-solid fa-file-invoice" },
-  { label: "Payout Settings", icon: "fa-solid fa-money-check-alt" },
-  { label: "Message", icon: "fa-solid fa-comments", badge: true },
-  { label: "Profile Settings", icon: "fa-solid fa-user-cog" },
-  { label: "Social Media", icon: "fa-brands fa-facebook" },
-  { label: "Change Password", icon: "fa-solid fa-key" },
-  { label: "Logout", icon: "fa-solid fa-sign-out-alt" },
-];
-
-const SideHeader: React.FC = () => {
-  return (
-    <aside
-      style={{
-        width: 270,
-        background: "#fff",
-        borderRadius: 8,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.07)",
-        padding: 16,
-        fontFamily: "Inter, Arial, sans-serif",
-        marginTop: 60,
-      }}
-    >
-      {/* Profile Section */}
-      <div
-        style={{
-          background: "#0d6efd",
-          borderRadius: 8,
-          padding: "24px 0 40px 0",
-          textAlign: "center",
-          position: "relative",
-        }}
-      >
-        <img
-          src="https://randomuser.me/api/portraits/men/32.jpg"
-          alt="Dr Edalin Hendry"
-          style={{
-            width: 80,
-            height: 80,
-            borderRadius: "50%",
-            border: "4px solid #fff",
-            objectFit: "cover",
-            position: "absolute",
-            left: "50%",
-            top: 60,
-            transform: "translate(-50%, -50%)",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
-          }}
-        />
-      </div>
-      <div style={{ marginTop: 56, textAlign: "center" }}>
-        <div style={{ fontWeight: 600, fontSize: 18, color: "#222" }}>
-          Dr Edalin Hendry
-        </div>
-        <div style={{ fontSize: 13, color: "#888", margin: "4px 0" }}>
-          BDS, MDS - Oral & Maxillofacial Surgery
-        </div>
-        <button
-          style={{
-            background: "#eaf1ff",
-            color: "#0d6efd",
-            border: "none",
-            borderRadius: 4,
-            padding: "2px 12px",
-            fontSize: 12,
-            marginTop: 4,
-            cursor: "pointer",
-          }}
-        >
-          Dentist
-        </button>
-      </div>
-      {/* Availability */}
-      <div style={{ margin: "24px 0 12px 0" }}>
-        <label
-          htmlFor="availability"
-          style={{
-            fontSize: 13,
-            color: "#444",
-            fontWeight: 500,
-            marginBottom: 4,
-            display: "block",
-          }}
-        >
-          Availability <span style={{ color: "red" }}>*</span>
-        </label>
-        <select
-          id="availability"
-          style={{
-            width: "100%",
-            padding: "6px 8px",
-            borderRadius: 4,
-            border: "1px solid #e0e0e0",
-            fontSize: 13,
-            marginTop: 4,
-          }}
-          defaultValue="I am Available Now"
-        >
-          <option>I am Available Now</option>
-          <option>I am Not Available</option>
-        </select>
-      </div>
-      {/* Menu */}
-      <nav style={{ marginTop: 12 }}>
-        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-          {menuItems.map((item, idx) => (
-            <li
-              key={item.label}
-              style={{
-                marginBottom: 2,
-              }}
-            >
-              <a
-                href="#"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  padding: "8px 12px",
-                  borderRadius: 4,
-                  background: item.active ? "#0d6efd" : "transparent",
-                  color: item.active ? "#fff" : "#222",
-                  fontWeight: item.active ? 600 : 500,
-                  fontSize: 14,
-                  textDecoration: "none",
-                  position: "relative",
-                  transition: "background 0.2s",
-                }}
-              >
-                <i
-                  className={item.icon}
-                  style={{
-                    marginRight: 10,
-                    fontSize: 15,
-                    color: item.active ? "#fff" : "#0d6efd",
-                  }}
-                />
-                {item.label}
-                {item.badge && (
-                  <span
-                    style={{
-                      background: "#ffe066",
-                      color: "#b8860b",
-                      borderRadius: "50%",
-                      width: 8,
-                      height: 8,
-                      display: "inline-block",
-                      marginLeft: 8,
-                    }}
-                  />
-                )}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </aside>
-  );
+type UserData = {
+  firstname?: string;
+  lastname?: string;
+  email?: string;
+  mobile?: string;
+  specialization?: {
+    name?: string;
+  };
 };
 
-export default SideHeader;
+const API_BASE_URL = "http://192.168.1.42:3000";
+
+const menuItemsData = [
+  { key: "dashboard", icon: <DashboardOutlined />, label: "Dashboard", path: "/Doctor/dashboard" },
+  { key: "appointments", icon: <CalendarOutlined />, label: "Appointments", path: "/Doctor/appointment" },
+  { key: "patients", icon: <TeamOutlined />, label: "My Patients", path: "/Doctor/patients" },
+  { key: "reviews", icon: <UserOutlined />, label: "Walkin Patients", path: "/Doctor/walkin" },
+  { key: "services", icon: <SettingOutlined />, label: "Staff Management", path: "/Doctor/staffManagement" },
+  { key: "availability", icon: <DashboardOutlined />, label: "Availability", path: "/Doctor/Availability" },
+  { key: "accounts", icon: <FileTextOutlined />, label: "Accounts", path: "/Doctor/accounts" },
+  { key: "invoices", icon: <FileTextOutlined />, label: "Invoices", path: "/Doctor/invoices" },
+  { key: "messages", icon: <MailOutlined />, label: "Messages", path: "/Doctor/messages" },
+  { key: "logout", icon: <UserOutlined />, label: "Logout", path: "/logout" },
+];
+
+export default function SiderHeader() {
+  const [selectedMenuItem, setSelectedMenuItem] = useState("dashboard");
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const router = useRouter();
+
+  const getAuthToken = () => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("accessToken") || "your-token-here";
+    }
+    return "your-token-here";
+  };
+
+  const getCurrentUserData = async () => {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/users/getUser`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+      const data = await response.json();
+      setUserData(data?.data);
+    } catch (error) {
+      console.error("Failed to fetch user data:", error);
+    }
+  };
+
+  const menuItems = menuItemsData.map((item) => ({
+    key: item.key,
+    icon: item.icon,
+    label: item.label,
+    onClick: () => router.push(item.path),
+  }));
+
+  useEffect(() => {
+    getCurrentUserData();
+  }, []);
+
+  return (
+    <Sider
+      width={250}
+      style={{ background: "#fff" }}
+      breakpoint="lg"
+      collapsedWidth="0"
+      onBreakpoint={(broken) => {
+        // Handle responsive sider collapse if needed
+      }}
+    >
+      <div
+        style={{
+          padding: "20px",
+          textAlign: "center",
+          background: "#1890ff",
+          color: "white",
+        }}
+      >
+        <Avatar size={64} style={{ marginBottom: "10px" }}>
+          <UserOutlined />
+        </Avatar>
+        <Title level={5} style={{ color: "white", margin: 0 }}>
+          Dr {userData?.firstname} {userData?.lastname}
+        </Title>
+        <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: "12px", display: "block" }}>
+          {userData?.email}
+        </Text>
+        <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: "12px" }}>
+          {userData?.mobile}
+        </Text>
+        <div style={{ marginTop: "10px" }}>
+          <Tag color="blue">{userData?.specialization?.name}</Tag>
+        </div>
+      </div>
+      <Menu
+        mode="inline"
+        selectedKeys={[selectedMenuItem]}
+        onSelect={({ key }) => setSelectedMenuItem(key)}
+        style={{
+          borderRight: 0,
+          height: "calc(100vh - 200px)",
+          overflowY: "auto",
+        }}
+        items={menuItems}
+      />
+      <style jsx>{`
+        .ant-layout-sider {
+          box-shadow: 2px 0 8px rgba(0, 0, 0, 0.06);
+        }
+        .ant-menu-item:hover {
+          background-color: #f0f5ff !important;
+        }
+        .ant-menu-item-selected {
+          background-color: #e6f7ff !important;
+        }
+        @media (max-width: 768px) {
+          .ant-layout-sider {
+            position: fixed;
+            height: 100vh;
+            z-index: 1000;
+          }
+        }
+      `}</style>
+    </Sider>
+  );
+}
