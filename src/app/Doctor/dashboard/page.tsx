@@ -46,7 +46,6 @@ export default function MedicalDashboard() {
     specialization?: {
       name?: string;
     };
-    role?: string;
   };
   const [userData, setUserData] = useState<UserData | null>(null);
   const [dashboardData, setDashboardData] = useState({
@@ -59,7 +58,6 @@ export default function MedicalDashboard() {
       completed: 0,
       rescheduled: 0,
       cancelled: 0,
-      scheduled: 0,
       active: 0,
       total: 0,
     },
@@ -247,8 +245,6 @@ export default function MedicalDashboard() {
   const paginatedInvoices = recentInvoices.slice((invoicesPage - 1) * pageSize, invoicesPage * pageSize);
   const paginatedNotifications = notifications.slice((notificationsPage - 1) * pageSize, notificationsPage * pageSize);
 
-
-  console.log("userdaat", userData)
   return (
     <>
       <AppHeader />
@@ -276,12 +272,12 @@ export default function MedicalDashboard() {
             <Title level={5} style={{ color: "white", margin: 0 }}>
               Dr {userData?.firstname} {userData?.lastname}
             </Title>
-            {/* <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: "12px", display: "block" }}>
+            <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: "12px", display: "block" }}>
               {userData?.email}
             </Text>
             <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: "12px" }}>
               {userData?.mobile}
-            </Text> */}
+            </Text>
             <div style={{ marginTop: "10px" }}>
               <Tag color="blue">{userData?.specialization?.name}</Tag>
             </div>
@@ -321,7 +317,7 @@ export default function MedicalDashboard() {
                 { title: "Completed", value: dashboardData.appointmentCounts.completed, color: "#52c41a" },
                 { title: "Rescheduled", value: dashboardData.appointmentCounts.rescheduled, color: "#faad14" },
                 { title: "Cancelled", value: dashboardData.appointmentCounts.cancelled, color: "#f5222d" },
-                { title: "Scheduled", value: dashboardData.appointmentCounts.scheduled, color: "#1890ff" },
+                { title: "Active", value: dashboardData.appointmentCounts.active, color: "#1890ff" },
                 { title: "Total", value: dashboardData.appointmentCounts.total, color: "#13c2c2" },
               ].map((item) => (
                 <Col xs={24} sm={12} md={6} lg={3} key={item.title} className="ant-col-appointment">
@@ -338,9 +334,6 @@ export default function MedicalDashboard() {
             </Row>
 
             {/* Revenue Row */}
-            {userData?.role ==='doctor' && (
-
-        
             <Row gutter={[16, 16]} style={{ marginTop: "16px" }} justify="space-between">
               {[
                 { title: "Today Revenue", value: dashboardData.totalAmount.today, color: "#1890ff" },
@@ -360,7 +353,7 @@ export default function MedicalDashboard() {
                 </Col>
               ))}
             </Row>
-    )}
+
             {/* Patients Row */}
             <Row gutter={[16, 16]} style={{ marginTop: "16px" }} justify="space-between">
               {[

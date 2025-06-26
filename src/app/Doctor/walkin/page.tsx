@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   Calendar,
@@ -436,47 +436,19 @@ const AddWalkInPatient: React.FC = () => {
         }
         break;
 
-     case "age":
-      validatedValue = value.replace(/\D/g, ""); // Remove non-digits
-      if (!validatedValue) {
-        error = "Age is required";
-      } else if (!validateAge(validatedValue)) {
-        error = "Please enter a valid age between 1 and 120";
-      } else {
-        // Calculate DOB based on age
-        const currentYear = new Date().getFullYear();
-        const birthYear = currentYear - parseInt(validatedValue);
-        const dob = `${birthYear}-01-01`; // Default to Jan 1st
-        setPatientData((prev) => ({
-          ...prev,
-          dateOfBirth: dob,
-        }));
-      }
-      break;
+      case "age":
+        validatedValue = value.replace(/\D/g, ""); // Remove non-digits
+        if (validatedValue && !validateAge(validatedValue)) {
+          error = "Please enter a valid age between 1 and 120";
+        }
+        break;
 
-      // case "dateOfBirth":
-      //   if (value && !validateDOB(value)) {
-      //     error = "Date of birth cannot be in the future";
-      //   }
-      //   break;
+      case "dateOfBirth":
+        if (value && !validateDOB(value)) {
+          error = "Date of birth cannot be in the future";
+        }
+        break;
 
-      case "gender":
-      if (!value) {
-        error = "Gender is required";
-      }
-      break;
-
-      case "appointmentType":
-      if (!value) {
-        error = "Appointment type is required";
-      }
-      break;
-      case "department":
-      if (!value) {
-        error = "Department is required";
-      }
-      break;
-  
       case "visitReason":
         if (value.length > 500) {
           validatedValue = value.substring(0, 500);
@@ -523,101 +495,16 @@ const AddWalkInPatient: React.FC = () => {
   };
 
   // Dummy createAppointment function (replace with actual API call)
-  // const createAppointment = async (appointmentRequest: any) => {
-
-  //   // Replace with actual API call
-  //   return { success: true, data: { appointmentId: "dummyAppointmentId" }, message: "Appointment created" };
-  // };
-
-  const createAppointment = async (appointmentRequest: CreateAppointmentRequest): Promise<ApiResponse> => {
-  try {
-    const response = await fetch("http://216.10.251.239:3000/appointment/createAppointment", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${getAuthToken()}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(appointmentRequest),
-    });
-
-    const data: ApiResponse = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || `HTTP error! status: ${response.status}`);
-    }
-
-    return {
-      success: data.success,
-      message: data.message,
-      data: data.data || { appointmentId: data.data?._id || "unknown" },
-    };
-  } catch (error) {
-    console.error("Create Appointment API Error:", error);
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : "Failed to create appointment",
-    };
-  }
-};
+  const createAppointment = async (appointmentRequest: any) => {
+    // Replace with actual API call
+    return { success: true, data: { appointmentId: "dummyAppointmentId" }, message: "Appointment created" };
+  };
 
   // Dummy createPatient function (replace with actual API call)
   const createPatient = async (patientRequest: any) => {
     // Replace with actual API call
     return { success: true, data: { patientId: "dummyId" }, message: "Patient created" };
   };
-
-
-  interface JWTPayload {
-  userid: string;
-  mobile: string;
-  role: string;
-  appLanguage: string;
-  // Add other fields as needed
-}
-
-async function fetchUserData() {
-  try {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      throw new Error('No access token found in local storage');
-    }
-
-    const response = await fetch('http://216.10.251.239:3000/users/getUser', {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.message || `HTTP error! status: ${response.status}`);
-    }
-
-    console.log('User data fetched successfully:', result);
-    return result.data._id
-    return {
-      success: true,
-      message: 'User data retrieved successfully',
-      data: result.data || result,
-    };
-  } catch (error) {
-    console.error('Error fetching user data:', error);
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : 'Failed to fetch user data',
-    };
-  }
-}
-
-useEffect(() => {
-fetchUserData()
-},[])
-
-
-
 
   // Handle appointment creation and payment
   const handleContinueToPayment = async () => {
@@ -634,14 +521,10 @@ fetchUserData()
     setApiError("");
 
     try {
-      const docId = await fetchUserData();
-      const userId = localStorage.getItem("userId") || "";
-      console.log("Selected Doctor ID:", userId);
-      console.log("Selected createdPatientId ID:", docId);
       // Prepare Appointment API request data
       const appointmentRequest: CreateAppointmentRequest = {
-        userId: userId,
-        doctorId: docId,
+        userId: createdPatientId,
+        doctorId: patientData.doctorId,
         patientName: `${patientData.firstName} ${patientData.lastName}`,
         doctorName: selectedDoctor?.doctor?.name || "Doctor",
         appointmentType: patientData.appointmentType,
