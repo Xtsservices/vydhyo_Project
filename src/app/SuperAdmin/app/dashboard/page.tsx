@@ -304,7 +304,7 @@ const SuperAdminDashboard: React.FC = () => {
   }, [router]);
   const firstRowStats: StatCard[] = [
     {
-      title: 'New Doctors',
+      title: 'Pending Approval',
       value: dashboardData.doctors.pending,
       icon: <UsergroupAddOutlined />,
       color: '#1890ff',
@@ -487,18 +487,28 @@ const SuperAdminDashboard: React.FC = () => {
       render: (appointments: number) => (
         <div>
           <div style={{ fontWeight: 'bold', fontSize: '12px' }}>{appointments}</div>
-          <Progress percent={Math.min(appointments / 2, 100)} size="small" showInfo={false} />
+          {/* <Progress percent={Math.min(appointments / 2, 100)} size="small" showInfo={false} /> */}
         </div>
       ),
     },
     {
-      title: 'Rating',
-      dataIndex: 'rating',
-      key: 'rating',
-      render: (rating: number) => (
-        <Tag color="gold">⭐ {rating}</Tag>
+      title: 'Revenue',
+      dataIndex: 'revenue',
+      key: 'revenue',
+      render: (_: any, record: Doctor) => (
+        <Tag color="geekblue">
+          ₹{(record.appointments * 500).toLocaleString()}
+        </Tag>
       ),
     },
+    // {
+    //   title: 'Rating',
+    //   dataIndex: 'rating',
+    //   key: 'rating',
+    //   render: (rating: number) => (
+    //     <Tag color="gold">⭐ {rating}</Tag>
+    //   ),
+    // },
   ];
 
   return (
@@ -572,7 +582,7 @@ const SuperAdminDashboard: React.FC = () => {
                       valueStyle={{ color: stat.color, fontSize: '24px' }}
                     />
                     <Text type="secondary" style={{ fontSize: '12px' }}>
-                      {stat.change}
+                      {/* {stat.change} */}
                     </Text>
                   </Card>
                 </Col>
@@ -599,7 +609,7 @@ const SuperAdminDashboard: React.FC = () => {
                       valueStyle={{ color: stat.color, fontSize: '24px' }}
                     />
                     <Text type="secondary" style={{ fontSize: '12px' }}>
-                      {stat.change}
+                      {/* {stat.change} */}
                     </Text>
                   </Card>
                 </Col>
@@ -622,7 +632,7 @@ const SuperAdminDashboard: React.FC = () => {
                       valueStyle={{ color: stat.color, fontSize: '24px' }}
                     />
                     <Text type="secondary" style={{ fontSize: '12px' }}>
-                      {stat.change}
+                      {/* {stat.change} */}
                     </Text>
                   </Card>
                 </Col>
@@ -645,7 +655,7 @@ const SuperAdminDashboard: React.FC = () => {
                       valueStyle={{ color: stat.color, fontSize: '24px' }}
                     />
                     <Text type="secondary" style={{ fontSize: '12px' }}>
-                      {stat.change}
+                      {/* {stat.change} */}
                     </Text>
                   </Card>
                 </Col>

@@ -312,15 +312,15 @@ export default function MedicalDashboard() {
             {/* Appointment Counts Row */}
             <Row gutter={[16, 16]} justify="space-between">
               {[
-                { title: "Today", value: dashboardData.appointmentCounts.today, color: "#1890ff" },
-                { title: "Upcoming", value: dashboardData.appointmentCounts.upcoming, color: "#fa8c16" },
-                { title: "Completed", value: dashboardData.appointmentCounts.completed, color: "#52c41a" },
-                { title: "Rescheduled", value: dashboardData.appointmentCounts.rescheduled, color: "#faad14" },
-                { title: "Cancelled", value: dashboardData.appointmentCounts.cancelled, color: "#f5222d" },
-                { title: "Active", value: dashboardData.appointmentCounts.active, color: "#1890ff" },
-                { title: "Total", value: dashboardData.appointmentCounts.total, color: "#13c2c2" },
+                { title: "Today Appointments", value: dashboardData.appointmentCounts.today, color: "#1890ff" },
+                { title: "Upcoming Appointments", value: dashboardData.appointmentCounts.upcoming, color: "#fa8c16" },
+                { title: "Completed Appointments", value: dashboardData.appointmentCounts.completed, color: "#52c41a" },
+                { title: "Rescheduled Appointments", value: dashboardData.appointmentCounts.rescheduled, color: "#faad14" },
+                { title: "Cancelled Appointments", value: dashboardData.appointmentCounts.cancelled, color: "#f5222d" },
+                // { title: "Active", value: dashboardData.appointmentCounts.active, color: "#1890ff" },
+                // { title: "Total", value: dashboardData.appointmentCounts.total, color: "#13c2c2" },
               ].map((item) => (
-                <Col xs={24} sm={12} md={6} lg={3} key={item.title} className="ant-col-appointment">
+                <Col xs={24} sm={12} md={8} lg={4}  key={item.title} className="ant-col-appointment">
                   <Card>
                     <Statistic
                       title={item.title}
@@ -347,7 +347,7 @@ export default function MedicalDashboard() {
                       title={item.title}
                       value={item.value}
                       valueStyle={{ color: item.color }}
-                      prefix="$"
+                      prefix="₹"
                     />
                   </Card>
                 </Col>
@@ -357,12 +357,13 @@ export default function MedicalDashboard() {
             {/* Patients Row */}
             <Row gutter={[16, 16]} style={{ marginTop: "16px" }} justify="space-between">
               {[
-                { title: "Today Patients", value: dashboardData.uniquePatients.today, color: "#1890ff", icon: <UserOutlined /> },
+                { title: "Total Patients", value: dashboardData.uniquePatients.total, color: "#13c2c2", icon: <UserOutlined /> },
+                // { title: "Today Patients", value: dashboardData.uniquePatients.today, color: "#1890ff", icon: <UserOutlined /> },
                 { title: "This Week", value: dashboardData.uniquePatients.week, color: "#52c41a", icon: <UserOutlined /> },
                 { title: "This Month", value: dashboardData.uniquePatients.month, color: "#fa8c16", icon: <UserOutlined /> },
-                { title: "Total Patients", value: dashboardData.uniquePatients.total, color: "#13c2c2", icon: <UserOutlined /> },
+                // { title: "Total Patients", value: dashboardData.uniquePatients.total, color: "#13c2c2", icon: <UserOutlined /> },
               ].map((item) => (
-                <Col xs={24} sm={12} md={6} key={item.title}>
+                <Col xs={24} sm={12} md={8} key={item.title}>
                   <Card>
                     <Statistic
                       title={item.title}
@@ -522,6 +523,112 @@ export default function MedicalDashboard() {
                     </div>
                   </div>
                 </Card>
+              </Col>
+            </Row>
+
+            <Row gutter={[16, 16]} style={{ marginTop: "16px" }}>
+              <Col span={24}>
+              <Card title="Revenue Trend ">
+                <div style={{ width: "100%", height: 300, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="100%" height="260" viewBox="0 0 700 260" style={{ background: "#fff", borderRadius: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                  {/* Y axis grid lines and labels */}
+                  {[0, 100, 200, 300, 400, 500].map((y, i) => (
+                  <g key={i}>
+                    <line
+                    x1={60}
+                    y1={220 - (y / 500) * 180}
+                    x2={660}
+                    y2={220 - (y / 500) * 180}
+                    stroke="#f0f0f0"
+                    strokeDasharray="4"
+                    />
+                    <text
+                    x={40}
+                    y={225 - (y / 500) * 180}
+                    fontSize="12"
+                    fill="#bfbfbf"
+                    textAnchor="end"
+                    >
+                    {y}
+                    </text>
+                  </g>
+                  ))}
+                  {/* X axis labels */}
+                  {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d, i) => (
+                  <text
+                    key={d}
+                    x={80 + i * 90}
+                    y={240}
+                    fontSize="13"
+                    fill="#888"
+                    textAnchor="middle"
+                    fontWeight={500}
+                  >
+                    {d}
+                  </text>
+                  ))}
+                  {/* Smooth revenue line using Bezier curves */}
+                  <path
+                  d="
+                    M80,200
+                    C110,170 170,140 170,140
+                    S260,80 260,80
+                    S350,120 350,120
+                    S440,160 440,160
+                    S530,110 530,110
+                    S620,60 620,60
+                  "
+                  fill="none"
+                  stroke="#1890ff"
+                  strokeWidth="4"
+                  style={{ filter: "drop-shadow(0 2px 6px #1890ff33)" }}
+                  />
+                  {/* Area under the curve */}
+                  <path
+                  d="
+                    M80,200
+                    C110,170 170,140 170,140
+                    S260,80 260,80
+                    S350,120 350,120
+                    S440,160 440,160
+                    S530,110 530,110
+                    S620,60 620,60
+                    L620,220 L80,220 Z
+                  "
+                  fill="#1890ff22"
+                  stroke="none"
+                  />
+                  {/* Dots and values */}
+                  {[
+                  { x: 80, y: 200, value: 100 },
+                  { x: 170, y: 140, value: 260 },
+                  { x: 260, y: 80, value: 400 },
+                  { x: 350, y: 120, value: 320 },
+                  { x: 440, y: 160, value: 220 },
+                  { x: 530, y: 110, value: 350 },
+                  { x: 620, y: 60, value: 500 },
+                  ].map((pt, i) => (
+                  <g key={i}>
+                    <circle cx={pt.x} cy={pt.y} r={7} fill="#fff" stroke="#1890ff" strokeWidth={3} />
+                    <circle cx={pt.x} cy={pt.y} r={3} fill="#1890ff" />
+                    <text
+                    x={pt.x}
+                    y={pt.y - 15}
+                    fontSize="13"
+                    fill="#1890ff"
+                    textAnchor="middle"
+                    fontWeight={600}
+                    >
+                    ₹{pt.value}
+                    </text>
+                  </g>
+                  ))}
+                </svg>
+                </div>
+                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+                <span style={{ color: "#888", fontSize: 12 }}>Data is for illustration only</span>
+                </div>
+              </Card>
               </Col>
             </Row>
 

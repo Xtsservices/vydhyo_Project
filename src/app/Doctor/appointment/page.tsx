@@ -16,7 +16,8 @@ import {
   Modal,
   DatePicker,
   TimePicker,
-  message
+  message,
+  Radio
 } from 'antd';
 import AppHeader from "@/app/Admin/components/header";
 import SideHeader from '../components/sideheader';
@@ -62,6 +63,7 @@ const Appointment = () => {
     };
 
     type AppointmentItem = {
+        updatedAt: any;
         _id: string;
         appointmentId: string;
         patientName: string;
@@ -100,6 +102,13 @@ const Appointment = () => {
                     updatedAt: new Date().toISOString()
                 } : appt
             );
+
+            // Sort appointments by updatedAt (latest first), fallback to date+time if missing
+            updatedAppointments.sort((a: AppointmentItem, b: AppointmentItem) => {
+                const updatedA = a.updatedAt ? new Date(a.updatedAt).getTime() : new Date(`${a.appointmentDate}T${a.appointmentTime}`).getTime();
+                const updatedB = b.updatedAt ? new Date(b.updatedAt).getTime() : new Date(`${b.appointmentDate}T${b.appointmentTime}`).getTime();
+                return updatedB - updatedA;
+            });
 
             // Update localStorage
             const updatedData = {
@@ -237,7 +246,22 @@ const Appointment = () => {
     return (
         <>
         <AppHeader />
-        <div style={{ padding: '24px', backgroundColor: '#f5f5f5', minHeight: '100vh',marginTop: '64px' }}>
+               
+        <div style={{ padding: '10px', backgroundColor: '#f5f5f5', minHeight: '100vh',marginTop: '64px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 0 }}>
+            <Radio.Group
+                optionType="button"
+                buttonStyle="solid"
+                defaultValue="online"
+                style={{ background: '#fff', padding: 4 }}
+            >
+                
+                <Radio.Button value="online">Online</Radio.Button>
+                <Radio.Button value="walk-in">Walk-in</Radio.Button>
+                <Radio.Button value="home-services">Home-services</Radio.Button>
+            </Radio.Group>
+        </div>
+
             {/* Header */}
             <div style={{ marginBottom: '32px' }}>
                 <Title level={2} style={{ margin: 0, color: '#262626' }}>
@@ -245,6 +269,7 @@ const Appointment = () => {
                 </Title>
                 <Text type="secondary">Manage your patient appointments</Text>
             </div>
+            
 
             {/* Stats Cards */}
             <Row gutter={[16, 16]} style={{ marginBottom: '32px' }}>
@@ -330,7 +355,9 @@ const Appointment = () => {
                         marginBottom: '24px',
                         borderBottom: '1px solid #f0f0f0'
                     }}
+                    
                 />
+                
             </Card>
 
             {/* Reschedule Modal */}
@@ -347,6 +374,7 @@ const Appointment = () => {
                 okText="Reschedule"
                 cancelText="Cancel"
             >
+                
                 <Space direction="vertical" style={{ width: '100%' }}>
                     <Text>Select new date:</Text>
                     <DatePicker 
@@ -361,10 +389,12 @@ const Appointment = () => {
                         onChange={(time) => setNewTime(time ? moment(time.toDate()) : null)}
                     />
                 </Space>
+                
             </Modal>
         </div></>
         
     );
 };
+
 
 export default Appointment;

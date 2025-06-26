@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Table, Button, Input, Select, Tag, Space, Layout } from 'antd';
+import { Table, Button, Input, Select, Tag, Space, Layout, Radio } from 'antd';
 import { SearchOutlined, FilterOutlined } from '@ant-design/icons';
 import  AppHeader from '../../components/header';
 import SideHeader from '../../components/sideheader';
@@ -61,17 +61,17 @@ export default function AppointmentsTable() {
         </div>
       ),
     },
-    {
-      title: 'Type',
-      dataIndex: 'type',
-      key: 'type',
-      width: 100,
-      render: (type: string) => {
-        let color = 'blue';
-        if (type === 'Follow-up') color = 'purple';
-        return <Tag color={color}>{type}</Tag>;
-      },
-    },
+    // {
+    //   title: 'Type',
+    //   dataIndex: 'type',
+    //   key: 'type',
+    //   width: 100,
+    //   render: (type: string) => {
+    //     let color = 'blue';
+    //     if (type === 'Follow-up') color = 'purple';
+    //     return <Tag color={color}>{type}</Tag>;
+    //   },
+    // },
     {
       title: 'Status',
       dataIndex: 'status',
@@ -183,15 +183,27 @@ export default function AppointmentsTable() {
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
           overflow: 'hidden'
         }}>
+
+          {/* Service Type Selection or RADIO BUTTONS */}
+          <Space style={{ padding: '10px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center' }}>
+            <span style={{ marginRight: 20, fontWeight: 500 }}>Service Type:</span>
+            <Radio.Group defaultValue="online" buttonStyle="solid">
+              <Radio.Button value="online">Online</Radio.Button>
+              <Radio.Button value="walkin">Walk-in</Radio.Button>
+              <Radio.Button value="home">Home</Radio.Button>
+            </Radio.Group>
+          </Space>
+
+
           {/* Header */}
           <div style={{ 
-            padding: '16px 24px', 
+            padding: '15px 20px', 
             borderBottom: '1px solid #f0f0f0',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center'
           }}>
-            <h2 style={{ margin: 0, fontSize: '16px', color: '#262626' }}>Appointments</h2>
+            <h2 style={{ margin: 0, fontSize: '25px', color: '#262626' }}>Appointments</h2>
             <Space>
               <Input
                 placeholder="Search by Patient, Doctor, or Clinic"
@@ -200,9 +212,15 @@ export default function AppointmentsTable() {
                 onChange={(e) => setSearchText(e.target.value)}
                 style={{ width: 300 }}
               />
-              <Button icon={<FilterOutlined />}>
-                Filter
-              </Button>
+                <Select
+                defaultValue="all"
+                style={{ width: 120 }}
+                suffixIcon={<FilterOutlined />}
+                >
+                <Option value="all">All</Option>
+                <Option value="weekly">Weekly</Option>
+                <Option value="monthly">Monthly</Option>
+                </Select>
             </Space>
           </div>
 
@@ -216,7 +234,7 @@ export default function AppointmentsTable() {
               total: 3,
               showSizeChanger: false,
               showQuickJumper: false,
-              showTotal: (total, range) => `${range[0]}-${range[1]} of ${total}`,
+              // showTotal: (total, range) => `${range[0]}-${range[1]} of ${total}`,
               style: { padding: '16px 24px' }
             }}
             size="middle"

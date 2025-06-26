@@ -46,14 +46,19 @@ const AdvertisingDoctorsPage = () => {
       {/* Hero Section */}
       <section className="bg-[#F8FCFA] py-12">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center px-4">
-          <div className="flex-1">
+          <div className="flex-1" style={{marginLeft: '50px'}}>
             <h1 className="text-3xl md:text-4xl font-bold text-[#1A3B34] mb-4">
-              Deliver Exceptional <br /> Patient Experience <br />
-              with <span className="text-[#6EDC8C]">Vydhyo</span>
+              Helping Doctors <br /> Bring Trust Care <br />
+              Closer,Fater & Smarter 
             </h1>
             <p className="text-[#4B5C58] mb-6 max-w-lg">
-              Connect with vetted doctors instantly. Private consultations, safe data, and results that care for your health.
+              With Growing cities and rising expectations, patients seek instant, guaranteed appointment an minimal waiy times, while docter want predictable OPDS, steady revenue, and digital visibility
+              {/* Connect with vetted doctors instantly. Private consultations, safe data, and results that care for your health. */}
             </p>
+            <p><h1> Vydhyo </h1> - build by doctors for Doctors in tier2/3 </p>
+            <p> cities - offers an all-in-one solution.</p>
+            <p> Join now or free to bring your journey with</p>
+            <br></br>
             <div className="relative">
               <button
                 className="bg-[#1A3B34] text-white px-8 py-3 rounded-md font-semibold hover:bg-[#17412d] transition"
@@ -136,7 +141,7 @@ const AdvertisingDoctorsPage = () => {
           </div>
           <div className="flex-1 flex justify-center mt-8 md:mt-0">
             <img
-              src="https://image.freepik.com/free-psd/doctor-management-dashboard-ui-kit_279329-4.jpg"
+              src="/images/div.png"
               alt="Vydhyo Devices"
               className="w-[340px] md:w-[420px] drop-shadow-xl"
             />
@@ -153,8 +158,8 @@ const AdvertisingDoctorsPage = () => {
               <path d="M12 7v5l4 2" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
             </svg>
           </div>
-          <h3 className="font-semibold text-lg text-[#1A3B34] mb-2">Instant Appointment</h3>
-          <p className="text-[#4B5C58] text-center text-sm">Book appointments instantly with available doctors, anytime.</p>
+          <h3 className="font-semibold text-lg text-[#1A3B34] mb-2">Efficient Appointment Management</h3>
+          <p className="text-[#4B5C58] text-center text-sm">Access your schedule anytime,anywhere live updates on your appointments.</p>
         </div>
         <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center">
           <div className="bg-[#EAFBF2] rounded-full p-3 mb-3">
@@ -163,8 +168,8 @@ const AdvertisingDoctorsPage = () => {
               <path d="M12 8a4 4 0 100 8 4 4 0 000-8z" stroke="#fff" strokeWidth="2"/>
             </svg>
           </div>
-          <h3 className="font-semibold text-lg text-[#1A3B34] mb-2">Vetted Doctors</h3>
-          <p className="text-[#4B5C58] text-center text-sm">Consult with experienced and verified healthcare professionals.</p>
+          <h3 className="font-semibold text-lg text-[#1A3B34] mb-2">Digital Tool for Practice Management</h3>
+          <p className="text-[#4B5C58] text-center text-sm">VYDHYO offers all - in -one tools for easy,seemles patient care.</p>
         </div>
         <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center">
           <div className="bg-[#EAFBF2] rounded-full p-3 mb-3">
@@ -173,8 +178,8 @@ const AdvertisingDoctorsPage = () => {
               <path d="M8 12h8M12 8v8" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
             </svg>
           </div>
-          <h3 className="font-semibold text-lg text-[#1A3B34] mb-2">Private Consultations</h3>
-          <p className="text-[#4B5C58] text-center text-sm">Your health data and conversations are always confidential.</p>
+          <h3 className="font-semibold text-lg text-[#1A3B34] mb-2">Increased Visibility & Patient reach </h3>
+          <p className="text-[#4B5C58] text-center text-sm">BE seen . BE chosen. Go digital with Vydhyo.</p>
         </div>
       </section>
 
@@ -184,38 +189,38 @@ const AdvertisingDoctorsPage = () => {
           <h2 className="text-xl md:text-2xl font-semibold text-center text-[#1A3B34] mb-8">Why Choose Vydhyo?</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="flex flex-col items-center">
-              <span className="font-bold text-[#1A3B34] mb-1">24x7</span>
-              <span className="text-sm text-[#4B5C58] text-center">Online Support</span>
+              <span className="font-bold text-[#1A3B34] mb-1">Smart, Localized, Digital profile</span>
+              <span className="text-sm text-[#4B5C58] text-center">Geo-targeted, SEO-optimized, Telugu-friendly</span>
             </div>
             <div className="flex flex-col items-center">
-              <span className="font-bold text-[#1A3B34] mb-1">No Waiting</span>
-              <span className="text-sm text-[#4B5C58] text-center">Book Instantly</span>
+              <span className="font-bold text-[#1A3B34] mb-1">Intelligent Appointment Engine</span>
+              <span className="text-sm text-[#4B5C58] text-center"> Live slot booking via WhatsApp, IVR thru local language support & APP</span>
             </div>
             <div className="flex flex-col items-center">
-              <span className="font-bold text-[#1A3B34] mb-1">100%</span>
-              <span className="text-sm text-[#4B5C58] text-center">Privacy & Security</span>
+              <span className="font-bold text-[#1A3B34] mb-1">Hyperlocal Patient Discovery</span>
+              <span className="text-sm text-[#4B5C58] text-center">Be seen by local patients instantly</span>
             </div>
             <div className="flex flex-col items-center">
-              <span className="font-bold text-[#1A3B34] mb-1">Zero</span>
-              <span className="text-sm text-[#4B5C58] text-center">Tech Fee</span>
+              <span className="font-bold text-[#1A3B34] mb-1">Connected Local Ecosystem</span>Book
+              <span className="text-sm text-[#4B5C58] text-center">Labs, pharmacies & home care all in one flow</span>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
             <div className="flex flex-col items-center">
-              <span className="font-bold text-[#1A3B34] mb-1">Digital Prescriptions</span>
-              <span className="text-sm text-[#4B5C58] text-center">Get your prescription online</span>
+              <span className="font-bold text-[#1A3B34] mb-1">Reputation Builder</span>
+              <span className="text-sm text-[#4B5C58] text-center">Collect reviews & promote trust locally</span>
             </div>
             <div className="flex flex-col items-center">
-              <span className="font-bold text-[#1A3B34] mb-1">Video Calls</span>
-              <span className="text-sm text-[#4B5C58] text-center">Consult from anywhere</span>
+              <span className="font-bold text-[#1A3B34] mb-1">Practice Growth Tools</span>
+              <span className="text-sm text-[#4B5C58] text-center">Digital branding, patient education & brand tools</span>
             </div>
             <div className="flex flex-col items-center">
-              <span className="font-bold text-[#1A3B34] mb-1">EMR</span>
-              <span className="text-sm text-[#4B5C58] text-center">Complete medical history</span>
+              <span className="font-bold text-[#1A3B34] mb-1">EMR + E-Prescriptions</span>
+              <span className="text-sm text-[#4B5C58] text-center">Secure, digital prescriptions & patient records</span>
             </div>
             <div className="flex flex-col items-center">
-              <span className="font-bold text-[#1A3B34] mb-1">Secure</span>
-              <span className="text-sm text-[#4B5C58] text-center">End-to-end encryption</span>
+              <span className="font-bold text-[#1A3B34] mb-1">CRM & Analytics Dashboard</span>
+              <span className="text-sm text-[#4B5C58] text-center">Track visits, send reminders & grow repeat business</span>
             </div>
           </div>
         </div>
@@ -228,18 +233,18 @@ const AdvertisingDoctorsPage = () => {
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="flex flex-col items-center">
               <div className="bg-[#6EDC8C] text-white rounded-full w-10 h-10 flex items-center justify-center font-bold mb-2">1</div>
-              <span className="font-semibold text-[#1A3B34] mb-1">Book Appointment</span>
-              <span className="text-sm text-[#4B5C58] text-center">Choose your doctor and time slot in a few clicks.</span>
+              <span className="font-semibold text-[#1A3B34] mb-1">Register</span>
+              <span className="text-sm text-[#4B5C58] text-center"> Kindly fill in your name, email address, phone number</span>
             </div>
             <div className="flex flex-col items-center">
               <div className="bg-[#6EDC8C] text-white rounded-full w-10 h-10 flex items-center justify-center font-bold mb-2">2</div>
-              <span className="font-semibold text-[#1A3B34] mb-1">Consultation</span>
-              <span className="text-sm text-[#4B5C58] text-center">Connect via call or video instantly.</span>
+              <span className="font-semibold text-[#1A3B34] mb-1"> Add Profile Info </span>
+              <span className="text-sm text-[#4B5C58] text-center">Kindly Share your medical registration number, clinic timings, consultation fee, and practice details for your profile.</span>
             </div>
             <div className="flex flex-col items-center">
               <div className="bg-[#6EDC8C] text-white rounded-full w-10 h-10 flex items-center justify-center font-bold mb-2">3</div>
-              <span className="font-semibold text-[#1A3B34] mb-1">Follow-up Care</span>
-              <span className="text-sm text-[#4B5C58] text-center">Digital prescriptions and follow-ups as needed.</span>
+              <span className="font-semibold text-[#1A3B34] mb-1">Verify by Vydhyo</span>
+              <span className="text-sm text-[#4B5C58] text-center">Once we verify online you are on-boarded on vydhyo</span>
             </div>
           </div>
         </div>
@@ -251,14 +256,14 @@ const AdvertisingDoctorsPage = () => {
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-[#1A3B34] mb-3">Vydhyo Money & Zero Tech Fee</h3>
             <ul className="list-disc pl-5 text-[#4B5C58] space-y-2">
-              <li>No hidden charges or tech fees</li>
-              <li>Pay only for consultations</li>
-              <li>Flexible payment for future add-ons</li>
+              <li>Patient Earn Vydhyo Money with every consultation</li>
+              <li>No hidden technology fees</li>
+              <li>Redeem rewards for future consultations</li>
             </ul>
           </div>
           <div className="flex-1 flex justify-center">
             <img
-              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTqdKkoCDPMlfsKENl0y0G_tBH2TR7xbEiWQqFtBC1UoDJ1tbWcXCBJUJQ&s"
+              src="/images/div (1).png"
               alt="Money Illustration"
               className="w-[220px] md:w-[280px]"
             />
@@ -271,18 +276,21 @@ const AdvertisingDoctorsPage = () => {
         <div className="max-w-5xl mx-auto px-4 flex flex-col md:flex-row items-center gap-8">
           <div className="flex-1 flex justify-center">
             <img
-              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQVcNUpd4yTuokX7RQz_RzrLZwsnrHVAzeyP6kWkZwLFf4atDiJbzmylc&s"
+              src="/images/div (2).png"
               alt="Security Illustration"
               className="w-[220px] md:w-[280px]"
             />
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-[#1A3B34] mb-3">Your Data is Safe & Secure</h3>
+            <h3 className="text-lg font-semibold text-[#1A3B34] mb-3">Patient Data is Safe & Secure</h3>
             <ul className="list-disc pl-5 text-[#4B5C58] space-y-2">
-              <li>End-to-End Encryption</li>
-              <li>HIPAA Compliant</li>
-              <li>Multi-layered security with regular audits</li>
-              <li>Data stored in secure, certified servers</li>
+              <li>End-to-End Encryption - <br></br>
+All communications are encrypted and secure</li>
+              <li>HIPAA Compliant - <br></br>
+              Full compliance with healthcare privacy laws</li>
+              <li>Multi-layered security with regular audits - <br></br>
+              Data stored on secure, certified servers</li>
+              {/* <li>Data stored in secure, certified servers</li> */}
             </ul>
           </div>
         </div>
@@ -291,9 +299,9 @@ const AdvertisingDoctorsPage = () => {
       {/* CTA */}
       <section className="py-12 bg-gradient-to-b from-[#F8FCFA] to-[#EAFBF2]">
         <div className="max-w-2xl mx-auto text-center px-4">
-          <h2 className="text-2xl font-bold text-[#1A3B34] mb-4">Ready to Experience Better Healthcare?</h2>
+          <h2 className="text-2xl font-bold text-[#1A3B34] mb-4">Ready to Amplify your digital presence </h2>
           <p className="text-[#4B5C58] mb-6">
-            Join thousands of patients who trust Vydhyo for their healthcare needs.
+            Join vydhyo to reclaim control of your practice
           </p>
           <div className="relative inline-block">
             <button 
