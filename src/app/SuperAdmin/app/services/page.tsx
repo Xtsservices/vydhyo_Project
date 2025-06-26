@@ -22,7 +22,7 @@ const services = [
     iconColor: '#1890ff',
   },
   {
-    title: 'Inpatient Services (IP)',
+    title: 'Pharmacy',
     icon: <BankOutlined />,
     color: '#f9f0ff',
     iconColor: '#722ed1',
@@ -33,12 +33,12 @@ const services = [
     color: '#fff7e6',
     iconColor: '#fa8c16',
   },
-  {
-    title: 'Labs',
-    icon: <MedicineBoxOutlined />,
-    color: '#f6ffed',
-    iconColor: '#52c41a',
-  },
+  // {
+  //   title: 'Labs',
+  //   icon: <MedicineBoxOutlined />,
+  //   color: '#f6ffed',
+  //   iconColor: '#52c41a',
+  // },
   {
     title: 'Blood Banks',
     icon: <HeartOutlined />,
