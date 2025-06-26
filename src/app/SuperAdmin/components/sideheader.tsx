@@ -71,7 +71,7 @@ const SideHeader: React.FC<SideHeaderProps> = ({ selectedKey }) => {
       key: 'departments',
       icon: <BankOutlined />,
       label: 'Billing Status',
-      onClick: () => router.push('/SuperAdmin/app/departments')
+      onClick: () => router.push('/SuperAdmin/app/billing')
     },
     {
       key: 'specialities',
@@ -112,23 +112,23 @@ const SideHeader: React.FC<SideHeaderProps> = ({ selectedKey }) => {
     }
   ];
 
-  const pageItems = [
-    // {
-    //   key: 'profile',
-    //   icon: <UserOutlined />,
-    //   label: 'Profile',
-    // },
-    // {
-    //   key: 'authentication',
-    //   icon: <SettingOutlined />,
-    //   label: 'Authentication',
-    // },
-    // {
-    //   key: 'error-pages',
-    //   icon: <QuestionCircleOutlined />,
-    //   label: 'Error Pages',
-    // }
-  ];
+  // const pageItems = [
+  //   // {
+  //   //   key: 'profile',
+  //   //   icon: <UserOutlined />,
+  //   //   label: 'Profile',
+  //   // },
+  //   // {
+  //   //   key: 'authentication',
+  //   //   icon: <SettingOutlined />,
+  //   //   label: 'Authentication',
+  //   // },
+  //   // {
+  //   //   key: 'error-pages',
+  //   //   icon: <QuestionCircleOutlined />,
+  //   //   label: 'Error Pages',
+  //   // }
+  // ];
 
   return (
     <Sider
@@ -173,7 +173,7 @@ const SideHeader: React.FC<SideHeaderProps> = ({ selectedKey }) => {
       <Menu
         theme="dark"
         mode="inline"
-        items={pageItems}
+        // items={pageItems}
         style={{
           border: 'none',
           background: 'transparent'
