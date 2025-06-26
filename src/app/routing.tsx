@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 // Import components
 // import Home from "./page";
-import LoginScreen from "./Admin/app/login/page";
+import LoginScreen from "./LandingPage/login/page";
 import Dashboard from "./Admin/app/dashboard/page";
 import Clinics from './Admin/app/clinics/page';
 import DoctorList from "./Admin/app/doctors/page";

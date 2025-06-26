@@ -14,11 +14,23 @@ import {
   Spin,
   message,
   Layout,
+  Descriptions,
+  Card,
+  Row,
+  Col,
+  Divider,
 } from "antd";
 import {
   SearchOutlined,
   CalendarOutlined,
   DownloadOutlined,
+  UserOutlined,
+  PhoneOutlined,
+  MailOutlined,
+  BankOutlined,
+  IdcardOutlined,
+  MedicineBoxOutlined,
+  DollarOutlined,
 } from "@ant-design/icons";
 import AppHeader from "../../components/header";
 const { RangePicker } = DatePicker;
@@ -44,6 +56,20 @@ interface Specialization {
   };
 }
 
+interface BankDetails {
+  accountNumber: string | null;
+  ifscCode: string | null;
+  bankName: string | null;
+  accountHolderName: string | null;
+}
+
+interface ConsultationFee {
+  type: string;
+  fee: number;
+  currency: string;
+  _id: string;
+}
+
 interface Doctor {
   key: string;
   _id: string;
@@ -51,7 +77,7 @@ interface Doctor {
   lastname: string;
   mobile: string;
   email: string;
-  specialization: Specialization[];
+  specialization: Specialization[] | Specialization;
   status: string;
   createdAt: string;
   profilepic?: {
@@ -66,6 +92,16 @@ interface Doctor {
   isVerified: boolean;
   userId?: string;
   role?: string;
+  bankDetails?: BankDetails;
+  spokenLanguage?: string[];
+  appLanguage?: string;
+  relationship?: string;
+  isDeleted?: boolean;
+  rejectionReason?: string | null;
+  createdBy?: string;
+  updatedBy?: string;
+  updatedAt?: string;
+  consultationModeFee?: ConsultationFee[];
 }
 
 const DoctorList = () => {
@@ -77,38 +113,42 @@ const DoctorList = () => {
   const [specializationFilter, setSpecializationFilter] = useState("all");
   const [imageModalVisible, setImageModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
-  const [specializationModalVisible, setSpecializationModalVisible] =
-    useState(false);
-  const [selectedSpecializations, setSelectedSpecializations] = useState<
-    Specialization[]
-  >([]);
+  const [specializationModalVisible, setSpecializationModalVisible] = useState(false);
+  const [selectedSpecializations, setSelectedSpecializations] = useState<Specialization[]>([]);
   const [selectedDoctorName, setSelectedDoctorName] = useState("");
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const [doctorDetailsModalVisible, setDoctorDetailsModalVisible] = useState(false);
+  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
 
   const router = useRouter();
-
   const searchParams = useSearchParams();
   const status = searchParams.get("status") || "approved";
-  console.log("status===================", status);
 
   const applyFilters = (doctorList: Doctor[]) => {
     let filtered = doctorList;
 
     if (searchText) {
       filtered = filtered.filter(
-        (doctor) =>
-          `${doctor.firstname} ${doctor.lastname}`
-            .toLowerCase()
-            .includes(searchText.toLowerCase()) ||
-          doctor.email.toLowerCase().includes(searchText.toLowerCase()) ||
-          doctor.medicalRegistrationNumber
-            ?.toLowerCase()
-            .includes(searchText.toLowerCase()) ||
-          doctor.specialization.some((specialization) =>
-            specialization.name
+        (doctor) => {
+          const specializations = Array.isArray(doctor.specialization) 
+            ? doctor.specialization 
+            : doctor.specialization ? [doctor.specialization] : [];
+          
+          return (
+            `${doctor.firstname} ${doctor.lastname}`
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            doctor.email.toLowerCase().includes(searchText.toLowerCase()) ||
+            doctor.medicalRegistrationNumber
               ?.toLowerCase()
-              .includes(searchText.toLowerCase())
-          )
+              .includes(searchText.toLowerCase()) ||
+            specializations.some((specialization) =>
+              specialization.name
+                ?.toLowerCase()
+                .includes(searchText.toLowerCase())
+            )
+          );
+        }
       );
     }
 
@@ -119,13 +159,17 @@ const DoctorList = () => {
     }
 
     if (specializationFilter !== "all") {
-      filtered = filtered.filter((doctor) =>
-        doctor.specialization.some((specialization) =>
+      filtered = filtered.filter((doctor) => {
+        const specializations = Array.isArray(doctor.specialization) 
+          ? doctor.specialization 
+          : doctor.specialization ? [doctor.specialization] : [];
+        
+        return specializations.some((specialization) =>
           specialization.name
             ?.toLowerCase()
             .includes(specializationFilter.toLowerCase())
-        )
-      );
+        );
+      });
     }
 
     setFilteredDoctors(filtered);
@@ -259,6 +303,11 @@ const DoctorList = () => {
     });
   };
 
+  const showDoctorDetailsModal = (doctor: Doctor) => {
+    setSelectedDoctor(doctor);
+    setDoctorDetailsModalVisible(true);
+  };
+
   useEffect(() => {
     fetchDoctors();
   }, []);
@@ -297,30 +346,13 @@ const DoctorList = () => {
     setSpecializationModalVisible(true);
   };
 
-  const downloadCertificate = (certificate: any, fileName: string) => {
-    if (certificate && certificate.data && certificate.mimeType) {
-      try {
-        const link = document.createElement("a");
-        link.href = `data:${certificate.mimeType};base64,${certificate.data}`;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        message.success("Certificate downloaded successfully");
-      } catch (error) {
-        message.error("Failed to download certificate");
-      }
-    } else {
-      message.error("Certificate not available");
-    }
-  };
-
   const getUniqueSpecializations = () => {
-    const allSpecs = doctors.flatMap((doctor) =>
-      Array.isArray(doctor.specialization)
-        ? doctor.specialization.map((specialization) => specialization.name)
-        : []
-    );
+    const allSpecs = doctors.flatMap((doctor) => {
+      const specializations = Array.isArray(doctor.specialization) 
+        ? doctor.specialization 
+        : doctor.specialization ? [doctor.specialization] : [];
+      return specializations.map((specialization) => specialization.name);
+    });
     return [...new Set(allSpecs)].filter(
       (specialization) => specialization && String(specialization).trim() !== ""
     );
@@ -363,7 +395,15 @@ const DoctorList = () => {
               {!imageSrc &&
                 `${record.firstname?.[0] ?? ""}${record.lastname?.[0] ?? ""}`}
             </Avatar>
-            <span style={{ fontWeight: 500 }}>
+            <span 
+              style={{ 
+                fontWeight: 500, 
+                cursor: "pointer", 
+                color: "#1890ff",
+                textDecoration: "underline"
+              }}
+              onClick={() => showDoctorDetailsModal(record)}
+            >
               Dr. {record.firstname || ""} {record.lastname || ""}
             </span>
           </Space>
@@ -380,33 +420,40 @@ const DoctorList = () => {
       title: "Specialization",
       dataIndex: "specialization",
       key: "specialization",
-      render: (specializations: Specialization[], record: Doctor) => (
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <div>
-            {specializations && specializations.length > 0
-              ? specializations
-                  .map((spec) => spec.name)
-                  .filter((name) => name)
-                  .join(", ")
-              : "Not specified"}
+      render: (specialization: Specialization[] | Specialization, record: Doctor) => {
+        const specializations = Array.isArray(specialization) 
+          ? specialization 
+          : specialization ? [specialization] : [];
+        
+        return (
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div>
+              {specializations.length > 0
+                ? specializations
+                    .map((spec) => spec.name)
+                    .filter((name) => name)
+                    .join(", ")
+                : "Not specified"}
+            </div>
+            {/* {specializations.length > 0 && 
+            (
+              <Button
+                type="link"
+                size="small"
+                onClick={() =>
+                  showSpecializationModal(
+                    specializations,
+                    `Dr. ${record.firstname || ""} ${record.lastname || ""}`
+                  )
+                }
+                style={{ padding: "0 4px", height: "auto", fontSize: "12px" }}
+              >
+                View
+              </Button>
+            )} */}
           </div>
-          {specializations && specializations.length > 0 && (
-            <Button
-              type="link"
-              size="small"
-              onClick={() =>
-                showSpecializationModal(
-                  specializations,
-                  `Dr. ${record.firstname || ""} ${record.lastname || ""}`
-                )
-              }
-              style={{ padding: "0 4px", height: "auto", fontSize: "12px" }}
-            >
-              View
-            </Button>
-          )}
-        </div>
-      ),
+        );
+      },
     },
     {
       title: "Email",
@@ -538,46 +585,6 @@ const DoctorList = () => {
               </Space>
             </div>
 
-            {/* Filters */}
-            <div
-              style={{
-                display: "flex",
-                gap: "12px",
-                marginBottom: "20px",
-                alignItems: "center",
-              }}
-            >
-              {/* <Select
-                            placeholder="All Status"
-                            style={{ width: 120 }}
-                            value={statusFilter}
-                            onChange={setStatusFilter}
-                        >
-                            <Option value="all">All Status</Option>
-                            <Option value="active">Active</Option>
-                            <Option value="inactive">Inactive</Option>
-                            <Option value="pending">Pending</Option>
-                        </Select> */}
-
-              {/* <Select
-                            placeholder="All Specializations"
-                            style={{ width: 200 }}
-                            value={specializationFilter}
-                            onChange={setSpecializationFilter}
-                        >
-                            <Option value="all">All Specializations</Option>
-                            {getUniqueSpecializations().map(specialization => (
-                                <Option key={specialization} value={specialization}>{specialization}</Option>
-                            ))}
-                        </Select> */}
-
-              {/* <RangePicker 
-                            placeholder={['Start Date', 'End Date']}
-                            suffixIcon={<CalendarOutlined />}
-                            style={{ borderRadius: '6px' }}
-                        /> */}
-            </div>
-
             {/* Table */}
             <Spin spinning={loading}>
               <Table
@@ -615,22 +622,335 @@ const DoctorList = () => {
             </div>
           </div>
 
+          {/* Doctor Details Modal */}
+          <Modal
+            title={
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <UserOutlined style={{ color: "#1890ff" }} />
+                <span>
+                  Dr. {selectedDoctor?.firstname || ""} {selectedDoctor?.lastname || ""} - Details
+                </span>
+              </div>
+            }
+            open={doctorDetailsModalVisible}
+            onCancel={() => setDoctorDetailsModalVisible(false)}
+            footer={[
+              <Button key="close" onClick={() => setDoctorDetailsModalVisible(false)}>
+                Close
+              </Button>
+            ]}
+            width={900}
+            centered
+          >
+            {selectedDoctor && (
+              <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
+                {/* 1. Personal Info Section */}
+                <Card 
+                  title={
+                    <span>
+                      <UserOutlined style={{ marginRight: 8 }} />
+                      Personal Information
+                    </span>
+                  }
+                  size="small"
+                  style={{ marginBottom: 16 }}
+                >
+                  <Row gutter={[16, 16]}>
+                    <Col span={6}>
+                      <div style={{ textAlign: "center" }}>
+                        <Avatar
+                          size={80}
+                          src={getImageSrc(selectedDoctor.profilepic)}
+                          style={{ marginBottom: "8px" }}
+                        >
+                          {!getImageSrc(selectedDoctor.profilepic) &&
+                            `${selectedDoctor.firstname?.[0] ?? ""}${selectedDoctor.lastname?.[0] ?? ""}`}
+                        </Avatar>
+                        <div style={{ fontWeight: 500 }}>
+                          Dr. {selectedDoctor.firstname} {selectedDoctor.lastname}
+                        </div>
+                      </div>
+                    </Col>
+                    <Col span={18}>
+                      <Row gutter={[16, 16]}>
+                        <Col span={12}>
+                          <Descriptions column={1} size="small">
+                            <Descriptions.Item label="User ID">
+                              {selectedDoctor.userId || "N/A"}
+                            </Descriptions.Item>
+                            <Descriptions.Item label="Medical Registration">
+                              {selectedDoctor.medicalRegistrationNumber || "N/A"}
+                            </Descriptions.Item>
+                            <Descriptions.Item label="Gender">
+                              {selectedDoctor.gender || "N/A"}
+                            </Descriptions.Item>
+                            <Descriptions.Item label="Date of Birth">
+                              {selectedDoctor.DOB || "N/A"}
+                            </Descriptions.Item>
+                          </Descriptions>
+                        </Col>
+                        <Col span={12}>
+                          <Descriptions column={1} size="small">
+                            <Descriptions.Item label="Blood Group">
+                              {selectedDoctor.bloodgroup || "N/A"}
+                            </Descriptions.Item>
+                            <Descriptions.Item label="Marital Status">
+                              {selectedDoctor.maritalStatus || "N/A"}
+                            </Descriptions.Item>
+                            <Descriptions.Item label="Role">
+                              {selectedDoctor.role || "N/A"}
+                            </Descriptions.Item>
+                            <Descriptions.Item label="Relationship">
+                              {selectedDoctor.relationship || "N/A"}
+                            </Descriptions.Item>
+                          </Descriptions>
+                        </Col>
+                      </Row>
+                    </Col>
+                  </Row>
+                </Card>
+
+                {/* Contact and Status Info in single row */}
+                <Row gutter={16} style={{ marginBottom: 16 }}>
+                  <Col span={12}>
+                    <Card 
+                      title={
+                        <span>
+                          <PhoneOutlined style={{ marginRight: 8 }} />
+                          Contact Information
+                        </span>
+                      } 
+                      size="small"
+                    >
+                      <Descriptions column={1} size="small">
+                        <Descriptions.Item label="Email">
+                          {selectedDoctor.email || "N/A"}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Mobile">
+                          {selectedDoctor.mobile || "N/A"}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Spoken Languages">
+                          {selectedDoctor.spokenLanguage?.join(", ") || "N/A"}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="App Language">
+                          {selectedDoctor.appLanguage || "N/A"}
+                        </Descriptions.Item>
+                      </Descriptions>
+                    </Card>
+                  </Col>
+                  <Col span={12}>
+                    <Card 
+                      title={
+                        <span>
+                          <Tag color={getStatusColor(selectedDoctor.status)} style={{ marginRight: 8 }}>
+                            {selectedDoctor.status}
+                          </Tag>
+                          Status Information
+                        </span>
+                      } 
+                      size="small"
+                    >
+                      <Descriptions column={1} size="small">
+                        <Descriptions.Item label="Verified">
+                          <Tag color={selectedDoctor.isVerified ? "success" : "warning"}>
+                            {selectedDoctor.isVerified ? "Verified" : "Pending"}
+                          </Tag>
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Deleted">
+                          <Tag color={selectedDoctor.isDeleted ? "error" : "success"}>
+                            {selectedDoctor.isDeleted ? "Yes" : "No"}
+                          </Tag>
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Rejection Reason">
+                          {selectedDoctor.rejectionReason || "N/A"}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="Created At">
+                          {formatDate(selectedDoctor.createdAt)}
+                        </Descriptions.Item>
+                      </Descriptions>
+                    </Card>
+                  </Col>
+                </Row>
+
+                {/* 2. Specialization Section */}
+                <Card 
+                  title={
+                    <span>
+                      <MedicineBoxOutlined style={{ marginRight: 8 }} />
+                      Specialization
+                    </span>
+                  }
+                  size="small"
+                  style={{ marginBottom: 16 }}
+                >
+                  {(() => {
+                    const specializations = Array.isArray(selectedDoctor.specialization) 
+                      ? selectedDoctor.specialization 
+                      : selectedDoctor.specialization ? [selectedDoctor.specialization] : [];
+                    
+                    if (specializations.length === 0) {
+                      return <div style={{ color: "#8c8c8c" }}>No specialization information available</div>;
+                    }
+
+                    return specializations.map((spec, index) => (
+                      <div key={spec._id || index} style={{ 
+                        border: "1px solid #e8e8e8", 
+                        borderRadius: "6px", 
+                        padding: "12px", 
+                        marginBottom: "12px",
+                        backgroundColor: "#fafafa"
+                      }}>
+                        <Row gutter={[16, 8]}>
+                          <Col span={8}>
+                            <strong>Name:</strong> {spec.name || "N/A"}
+                          </Col>
+                          <Col span={8}>
+                            <strong>Experience:</strong> {spec.experience || 0} years
+                          </Col>
+                          <Col span={8}>
+                            <strong>ID:</strong> {spec.id || "N/A"}
+                          </Col>
+                        </Row>
+                        <div style={{ marginTop: "12px" }}>
+                          <strong>Certificates:</strong>
+                          <div style={{ marginTop: "8px" }}>
+                            {spec.drgreeCertificate?.data && (
+                              <Button
+                                type="link"
+                                size="small"
+                                onClick={() => showImageModal(`data:${spec.drgreeCertificate?.mimeType};base64,${spec.drgreeCertificate?.data}`)}
+                              >
+                                View Degree Certificate
+                              </Button>
+                            )}
+                            {spec.specializationCertificate?.data && (
+                              <Button
+                                type="link"
+                                size="small"
+                                onClick={() => showImageModal(`data:${spec.specializationCertificate?.mimeType};base64,${spec.specializationCertificate?.data}`)}
+                              >
+                                View Specialization Certificate
+                              </Button>
+                            )}
+                            {!spec.drgreeCertificate?.data && !spec.specializationCertificate?.data && (
+                              <span style={{ color: "#8c8c8c", fontStyle: "italic" }}>
+                                No certificates available
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ));
+                  })()}
+                </Card>
+
+                {/* 3. Practice Section (Coming Soon) */}
+                <Card 
+                  title={
+                    <span>
+                      <MedicineBoxOutlined style={{ marginRight: 8 }} />
+                      Practice
+                    </span>
+                  }
+                  size="small"
+                  style={{ marginBottom: 16 }}
+                >
+                  <div style={{ color: "#8c8c8c", fontStyle: "italic" }}>
+                    Coming soon
+                  </div>
+                </Card>
+
+                {/* 4. Consultation Fees */}
+                {selectedDoctor.consultationModeFee && selectedDoctor.consultationModeFee.length > 0 && (
+                  <Card 
+                    title={
+                      <span>
+                        <DollarOutlined style={{ marginRight: 8 }} />
+                        Consultation Fees
+                      </span>
+                    }
+                    size="small"
+                    style={{ marginBottom: 16 }}
+                  >
+                    {selectedDoctor.consultationModeFee.map((fee, index) => (
+                      <div key={fee._id || index} style={{ 
+                        display: "flex", 
+                        justifyContent: "space-between", 
+                        padding: "8px 0",
+                        borderBottom: index < selectedDoctor.consultationModeFee!.length - 1 ? "1px solid #f0f0f0" : "none"
+                      }}>
+                        <span>{fee.type}</span>
+                        <span style={{ fontWeight: 500 }}>
+                          {fee.currency} {fee.fee}
+                        </span>
+                      </div>
+                    ))}
+                  </Card>
+                )}
+
+                {/* 5. Bank Details in single row */}
+                {selectedDoctor.bankDetails && (
+                  <Card 
+                    title={
+                      <span>
+                        <BankOutlined style={{ marginRight: 8 }} />
+                        Bank Details
+                      </span>
+                    }
+                    size="small"
+                    style={{ marginBottom: 16 }}
+                  >
+                    <Row gutter={16}>
+                      <Col span={8}>
+                        <strong>Bank Name:</strong> {selectedDoctor.bankDetails.bankName || "N/A"}
+                      </Col>
+                      <Col span={8}>
+                        <strong>Account Holder:</strong> {selectedDoctor.bankDetails.accountHolderName || "N/A"}
+                      </Col>
+                      <Col span={8}>
+                        <strong>Account Number:</strong> {selectedDoctor.bankDetails.accountNumber || "N/A"}
+                      </Col>
+                      <Col span={8} style={{ marginTop: 8 }}>
+                        <strong>IFSC Code:</strong> {selectedDoctor.bankDetails.ifscCode || "N/A"}
+                      </Col>
+                    </Row>
+                  </Card>
+                )}
+
+                {/* 6. KYC Section (Coming Soon) */}
+                <Card 
+                  title={
+                    <span>
+                      <IdcardOutlined style={{ marginRight: 8 }} />
+                      KYC Details
+                    </span>
+                  }
+                  size="small"
+                >
+                  <div style={{ color: "#8c8c8c", fontStyle: "italic" }}>
+                    Coming soon
+                  </div>
+                </Card>
+              </div>
+            )}
+          </Modal>
+
           {/* Image Modal */}
           <Modal
-            title="Profile Picture"
+            title="Certificate View"
             open={imageModalVisible}
             onCancel={() => setImageModalVisible(false)}
             footer={null}
-            width={600}
+            width={800}
             centered
           >
             <div style={{ textAlign: "center" }}>
               <img
                 src={selectedImage}
-                alt="Profile"
+                alt="Certificate"
                 style={{
                   maxWidth: "100%",
-                  maxHeight: "500px",
+                  maxHeight: "600px",
                   objectFit: "contain",
                 }}
               />
@@ -699,54 +1019,22 @@ const DoctorList = () => {
                         {specialization.drgreeCertificate &&
                         specialization.drgreeCertificate.data ? (
                           <Button
-                            type="primary"
+                            type="link"
                             size="small"
-                            icon={<DownloadOutlined />}
-                            onClick={() =>
-                              downloadCertificate(
-                                specialization.drgreeCertificate,
-                                `${specialization.name}_Degree_Certificate.${
-                                  specialization.drgreeCertificate?.mimeType?.split(
-                                    "/"
-                                  )[1] || "jpg"
-                                }`
-                              )
-                            }
-                            style={{
-                              backgroundColor: "#1890ff",
-                              borderColor: "#1890ff",
-                              width: "fit-content",
-                            }}
+                            onClick={() => showImageModal(`data:${specialization.drgreeCertificate?.mimeType};base64,${specialization.drgreeCertificate?.data}`)}
                           >
-                            Download Degree Certificate
+                            View Degree Certificate
                           </Button>
                         ) : null}
 
                         {specialization.specializationCertificate &&
                         specialization.specializationCertificate?.data ? (
                           <Button
-                            type="primary"
+                            type="link"
                             size="small"
-                            icon={<DownloadOutlined />}
-                            onClick={() =>
-                              downloadCertificate(
-                                specialization.specializationCertificate,
-                                `${
-                                  specialization.name
-                                }_Specialization_Certificate.${
-                                  specialization.specializationCertificate?.mimeType?.split(
-                                    "/"
-                                  )[1] || "jpg"
-                                }`
-                              )
-                            }
-                            style={{
-                              backgroundColor: "#52c41a",
-                              borderColor: "#52c41a",
-                              width: "fit-content",
-                            }}
+                            onClick={() => showImageModal(`data:${specialization.specializationCertificate?.mimeType};base64,${specialization.specializationCertificate?.data}`)}
                           >
-                            Download Specialization Certificate
+                            View Specialization Certificate
                           </Button>
                         ) : null}
 
