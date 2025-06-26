@@ -37,6 +37,7 @@ import {
 } from "@ant-design/icons";
 import AppHeader from "../../components/header";
 import SideHeader from "../../components/sideheader";
+import { useRouter } from 'next/navigation';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -122,6 +123,7 @@ const NeedApproval = () => {
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
  const [reason, setReason] = useState("");
 
+  const router = useRouter();
 
 
   const applyFilters = (doctorList: Doctor[]) => {
@@ -239,7 +241,7 @@ const NeedApproval = () => {
       body.rejectionReason = reason;
     }
 
-
+    const doctorId = selectedDoctor.userId;
       const response = await fetch(
         `http://192.168.1.42:3000/admin/approveDoctor`,
         {
@@ -275,13 +277,15 @@ const NeedApproval = () => {
           newStatus === "active" ? "approved" : "rejected"
         } successfully`
       );
-    } catch (error) {
-      console.error("Error updating doctor status:", error);
-      if (error instanceof Error) {
-        message.error(error.message || "Failed to update doctor status");
-      } else {
-        message.error("Failed to update doctor status");
+      console.log("Doctor status updated successfully:", newStatus);
+      if (newStatus === "active") {
+        setApproveModalVisible(false)
+        router.push('/SuperAdmin/app/doctors?status=approved');
+      } else if (newStatus === "inactive") {
+        setRejectModalVisible(false)
+        router.push('/SuperAdmin/app/doctors?status=rejected');
       }
+      
     } finally {
       setUpdatingStatus(null);
     }
@@ -1113,7 +1117,7 @@ const modelView = () => {
               alignItems: "center",
             }}
           >
-            <Select
+            {/* <Select
               placeholder="All Status"
               style={{ width: 120 }}
               value={statusFilter}
@@ -1129,7 +1133,7 @@ const modelView = () => {
               placeholder={["Start Date", "End Date"]}
               suffixIcon={<CalendarOutlined />}
               style={{ borderRadius: "6px" }}
-            />
+            /> */}
           </div>
 
           {/* Table */}
