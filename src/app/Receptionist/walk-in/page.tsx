@@ -332,9 +332,9 @@ const AddWalkInPatient: React.FC = () => {
           setApiError("");
         } else {
           // Multiple users found, show dropdown
-          setApi(
-            " Please select one Patient"
-          );
+          // setApi(
+          //   " Please select one Patient"
+          // );
         }
       } else if (
         searchResult.success &&
