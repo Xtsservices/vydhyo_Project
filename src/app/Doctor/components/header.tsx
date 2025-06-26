@@ -8,9 +8,8 @@ const { Header } = Layout;
 const { Text } = Typography;
 
 const AppHeader = () => {
-  const router = useRouter(); // Initialize the router hook
+  const router = useRouter();
 
-  // Dropdown menu items for admin profile
   const adminMenuItems = [
     {
       key: "1",
@@ -29,36 +28,18 @@ const AppHeader = () => {
   ];
 
   const handleMenuClick = (e: { key: any }) => {
-    console.log("Menu clicked:", e.key);
-
-    // Handle logout functionality
     if (e.key === "3") {
-      // Logout option
-      // Remove token from localStorage
       localStorage.removeItem("token");
-
-      // You might also want to remove other auth-related items
       localStorage.removeItem("user");
       localStorage.removeItem("refreshToken");
-
-      // Clear sessionStorage if you're using it
       sessionStorage.clear();
-
-      // Redirect to login page
       router.push("/Admin/app/login");
     }
-
-    // Handle other menu items
     if (e.key === "1") {
-      // Profile
-      // Add profile navigation logic here
-      console.log("Navigate to profile");
+      // Profile navigation logic
     }
-
     if (e.key === "2") {
-      // Settings
-      // Add settings navigation logic here
-      console.log("Navigate to settings");
+      // Settings navigation logic
     }
   };
 
@@ -119,7 +100,6 @@ const AppHeader = () => {
             } as CSSProperties
           }
         >
-          {/* Notifications */}
           <Badge count={3} size="small">
             <Button
               type="text"
@@ -136,7 +116,6 @@ const AppHeader = () => {
             />
           </Badge>
 
-          {/* Admin Profile Dropdown */}
           <Dropdown
             menu={{
               items: adminMenuItems,
