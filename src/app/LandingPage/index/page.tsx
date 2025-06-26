@@ -417,7 +417,7 @@ const HealthcareCarousel: React.FC<HeroSectionProps> = ({
         <div className="hero-container">
           <div className="doctor-image-container">
             <img
-              src="https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=600&h=800&fit=crop&crop=face"
+              src="https://media.istockphoto.com/id/1960028378/photo/female-nurse-consoling-old-man-at-home.jpg?s=612x612&w=0&k=20&c=tq-D9prBtWc7F5cM_VZFFn4ekRhdXpYaW2Dcgcd8Nfg="
               alt="Indian Doctor"
               className="doctor-image"
             />

@@ -353,10 +353,10 @@ const Login = () => {
                     src="/images/vydh_logo.png"
                     alt="Logo"
                     className="h-20 w-40"
-                    style={{ maxWidth: 90 }}
+                    style={{ maxWidth: 150 , height: 130}}
                   />
                   <h1 className="text-3xl font-bold text-gray-900">
-                    {otpSent ? "Enter OTP" : "Login"}
+                    {otpSent ? "Enter OTP" : ""}
                   </h1>
                 </div>
               {!otpSent && (

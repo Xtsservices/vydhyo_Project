@@ -419,26 +419,26 @@ const NeedApproval = () => {
       key: "createdAt",
       render: (date: string) => formatDate(date),
     },
+    // {
+    //   title: "Status",
+    //   dataIndex: "status",
+    //   key: "status",
+    //   render: (status: string) => (
+    //     <Tag
+    //       color={getStatusColor(status)}
+    //       style={{
+    //         borderRadius: "4px",
+    //         fontWeight: 500,
+    //         border: "none",
+    //         textTransform: "capitalize",
+    //       }}
+    //     >
+    //       {status || "Unknown"}
+    //     </Tag>
+    //   ),
+    // },
     {
       title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status: string) => (
-        <Tag
-          color={getStatusColor(status)}
-          style={{
-            borderRadius: "4px",
-            fontWeight: 500,
-            border: "none",
-            textTransform: "capitalize",
-          }}
-        >
-          {status || "Unknown"}
-        </Tag>
-      ),
-    },
-    {
-      title: "Verified",
       dataIndex: "isVerified",
       key: "isVerified",
       render: (isVerified: boolean) => (
