@@ -272,12 +272,12 @@ export default function MedicalDashboard() {
             <Title level={5} style={{ color: "white", margin: 0 }}>
               Dr {userData?.firstname} {userData?.lastname}
             </Title>
-            <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: "12px", display: "block" }}>
+            {/* <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: "12px", display: "block" }}>
               {userData?.email}
             </Text>
             <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: "12px" }}>
               {userData?.mobile}
-            </Text>
+            </Text> */}
             <div style={{ marginTop: "10px" }}>
               <Tag color="blue">{userData?.specialization?.name}</Tag>
             </div>
