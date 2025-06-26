@@ -20,7 +20,9 @@ import {
   Row,
   Col,
   Image,
+  
 } from "antd";
+const { TextArea } = Input;
 import {
   SearchOutlined,
   CalendarOutlined,
@@ -118,6 +120,9 @@ const NeedApproval = () => {
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+ const [reason, setReason] = useState("");
+
+
 
   const applyFilters = (doctorList: Doctor[]) => {
     let filtered = doctorList;
@@ -206,6 +211,9 @@ const NeedApproval = () => {
     }
   };
 
+
+
+
   const updateDoctorStatus = async (newStatus: string) => {
     setUpdatingStatus(selectedDoctor.userId);
     try {
@@ -215,6 +223,23 @@ const NeedApproval = () => {
         return;
       }
 
+      //here define body based on newStatus
+      if (newStatus === "inactive" && !reason) {
+        message.error("Please provide a reason for rejection");   
+        return;
+      }
+
+        // Build request body
+    const body: any = {
+      userId: selectedDoctor.userId,
+      status: newStatus === "active" ? "approved" : "rejected",
+    };
+
+    if (newStatus === "inactive" && reason) {
+      body.rejectionReason = reason;
+    }
+
+
       const response = await fetch(
         `http://192.168.1.42:3000/admin/approveDoctor`,
         {
@@ -223,10 +248,7 @@ const NeedApproval = () => {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            userId: selectedDoctor.userId,
-            status: newStatus === "active" ? "approved" : "rejected",
-          }),
+           body: JSON.stringify(body),
         }
       );
 
@@ -265,7 +287,11 @@ const NeedApproval = () => {
     }
   };
 
-
+   const handleReject = () => {
+    updateDoctorStatus("inactive"); // Pass reason if your function accepts it
+    setRejectModalVisible(false);
+    setReason(""); // Reset after submission
+  };
 
   useEffect(() => {
     fetchDoctors();
@@ -349,7 +375,7 @@ const NeedApproval = () => {
         const imageSrc = getImageSrc(record.profilepic);
         return (
           <Space>
-            <Avatar
+            {/* <Avatar
               size={40}
               src={imageSrc}
               style={{ flexShrink: 0 }}
@@ -357,7 +383,7 @@ const NeedApproval = () => {
             >
               {!imageSrc &&
                 `${record.firstname?.[0] ?? ""}${record.lastname?.[0] ?? ""}`}
-            </Avatar>
+            </Avatar> */}
             <span style={{ fontWeight: 500 }}>
               Dr. {record.firstname || ""} {record.lastname || ""}
             </span>
@@ -366,7 +392,7 @@ const NeedApproval = () => {
       },
     },
     {
-      title: "Doctor ID",
+      title: "Medical Registration Number",
       dataIndex: "medicalRegistrationNumber",
       key: "medicalRegistrationNumber",
       render: (text: string) => text || "N/A",
@@ -976,29 +1002,29 @@ const modelView = () => {
 
         {/* reject modal */}
         <Modal
-          title="Reject Doctor"
-          open={rejectModalVisible}
-          onCancel={() => setRejectModalVisible(false)}
-          footer={
-            <div style={{ display: "flex", justifyContent: "flex-end" as any }}>
-              <Button onClick={() => setRejectModalVisible(false)}>
-                Cancel
-              </Button>
-              <Button
-                style={{ marginLeft: "8px" }}
-                type="primary"
-                onClick={() => {
-                  updateDoctorStatus("inactive");
-                  setRejectModalVisible(false);
-                }}
-              >
-                Yes, Reject
-              </Button>
-            </div>
-          }
-        >
-          <p>Are you sure you want to approve this doctor?</p>
-        </Modal>
+      title="Reject Doctor"
+      open={rejectModalVisible}
+      onCancel={() => {
+        setRejectModalVisible(false);
+        setReason("");
+      }}
+      footer={
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <Button onClick={() => setRejectModalVisible(false)}>Cancel</Button>
+          <Button type="primary" style={{ marginLeft: 8 }} onClick={handleReject}>
+            Yes, Reject
+          </Button>
+        </div>
+      }
+    >
+      <p>Please provide a reason for rejecting this doctor:</p>
+      <TextArea
+        rows={4}
+        placeholder="Enter reason..."
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+      />
+    </Modal>
       </Modal>
     );
   };
