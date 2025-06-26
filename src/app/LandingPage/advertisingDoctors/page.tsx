@@ -1,40 +1,38 @@
 'use client';
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import AppHeader from "@/app/Admin/components/header";
 
 const AdvertisingDoctorsPage = () => {
   const router = useRouter();
+  const [showDropdown, setShowDropdown] = useState(false);
 
   const handleLogin = () => {
     router.push('/LandingPage/login');
   };
 
   const handleJoinNow = () => {
-    // Add your join now logic here
-    console.log('Join Now clicked');
+    setShowDropdown(!showDropdown);
   };
 
   const handleGetStarted = () => {
-    // Add your get started logic here
-    console.log('Get Started clicked');
+    setShowDropdown(!showDropdown);
   };
 
   return (
+    <>
+    {/* <AppHeader/> */}
     <div className="bg-[#F8FCFA] min-h-screen flex flex-col">
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto flex items-center justify-between py-4 px-4">
           <div className="flex items-center space-x-2">
-            <div className="bg-[#1A3B34] rounded-full w-8 h-8 flex items-center justify-center">
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12c0 5.52 4.48 10 10 10s10-4.48 10-10C22 6.48 17.52 2 12 2z" fill="#A7E8C1"/>
-                <path d="M12 4a8 8 0 100 16 8 8 0 000-16zm0 14.5A6.5 6.5 0 1112 5.5a6.5 6.5 0 010 13z" fill="#1A3B34"/>
-              </svg>
-            </div>
-            <div>
-              <span className="font-bold text-lg text-[#1A3B34]">Vydhyo</span>
-              <span className="block text-xs text-[#A7E8C1] -mt-1">for Healthcare</span>
-            </div>
+            <img
+              src="/images/vydh_logo.png"
+              alt="Vydhyo Logo"
+              className="w-35 h-25 object-contain mr-2"
+            />
+          
           </div>
           <button
             className="bg-[#1A3B34] text-white px-6 py-2 rounded-md font-semibold hover:bg-[#17412d] transition"
@@ -56,34 +54,84 @@ const AdvertisingDoctorsPage = () => {
             <p className="text-[#4B5C58] mb-6 max-w-lg">
               Connect with vetted doctors instantly. Private consultations, safe data, and results that care for your health.
             </p>
-            <button
-              className="bg-[#1A3B34] text-white px-8 py-3 rounded-md font-semibold hover:bg-[#17412d] transition"
-              onClick={() => {
-              const popup = document.getElementById('join-now-popup');
-                if (popup) {
-                popup.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                popup.classList.remove('hidden');
-              }
-              }}
-            >
-              Join Now - It's Free
-            </button>
-            {/* Popup Message */}
-            <div
-              id="join-now-popup"
-              className="hidden mt-6 bg-white rounded-lg shadow-lg p-3 max-w-xs mx-auto flex flex-col items-center"
-            >
-              {/* <p className="text-[#1A3B34] font-semibold mb-2 text-sm"> */}
-              {/* Go to Play Store to download the Vydhyo app! */}
-              {/* </p> */}
-              <a
-              href="https://play.google.com/store"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-[#6EDC8C] text-[#1A3B34] px-4 py-1.5 rounded-md font-semibold text-sm hover:bg-[#4fd17a] transition"
+            <div className="relative">
+              <button
+                className="bg-[#1A3B34] text-white px-8 py-3 rounded-md font-semibold hover:bg-[#17412d] transition"
+                onClick={handleJoinNow}
               >
-              Go to Play Store
-              </a>
+                Join Now - It's Free
+              </button>
+              
+              {/* Dropdown */}
+              {showDropdown && (
+                <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-xl border p-6 w-96 z-10">
+                  <div className="text-center">
+                    <div className="bg-[#4A90E2] text-white px-4 py-1 rounded-full text-sm font-medium mb-4 inline-block">
+                      GET THE APP
+                    </div>
+                    <h3 className="text-xl font-bold text-[#1A3B34] mb-2">
+                      Coming soon Vydhyo - India's Trusted Doctors App!
+                    </h3>
+                    <p className="text-[#4B5C58] text-sm mb-6 leading-relaxed">
+                      Connect with 10,000+ verified doctors across India. Book instant video consultations, 
+                      order medicines, get lab tests done, and access your health records - all in one app. 
+                      Available in Hindi, English, and 8 other Indian languages.
+                    </p>
+                    
+                    {/* App Store Buttons */}
+                    <div className="flex gap-3 justify-center mb-6">
+                      <a
+                        href="https://play.google.com/store"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-black rounded-lg px-4 py-2 flex items-center gap-2 hover:bg-gray-800 transition"
+                      >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                          <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.61 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/>
+                        </svg>
+                        <div className="text-left">
+                          <div className="text-xs text-gray-300">GET IT ON</div>
+                          <div className="text-sm font-semibold text-white">Google Play</div>
+                        </div>
+                      </a>
+                      <a
+                        href="https://apps.apple.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-black rounded-lg px-4 py-2 flex items-center gap-2 hover:bg-gray-800 transition"
+                      >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                          <path d="M18.71,19.5C17.88,20.74 17,21.95 15.66,21.97C14.32,22 13.89,21.18 12.37,21.18C10.84,21.18 10.37,21.95 9.1,22C7.79,22.05 6.8,20.68 5.96,19.47C4.25,17 2.94,12.45 4.7,9.39C5.57,7.87 7.13,6.91 8.82,6.88C10.1,6.86 11.32,7.75 12.11,7.75C12.89,7.75 14.37,6.68 15.92,6.84C16.57,6.87 18.39,7.1 19.56,8.82C19.47,8.88 17.39,10.19 17.41,12.63C17.44,15.65 20.06,16.66 20.09,16.67C20.06,16.74 19.67,18.11 18.71,19.5M13,3.5C13.73,2.67 14.94,2.04 15.94,2C16.07,3.17 15.6,4.35 14.9,5.19C14.21,6.04 13.07,6.7 11.95,6.61C11.8,5.46 12.36,4.26 13,3.5Z"/>
+                        </svg>
+                        <div className="text-left">
+                          <div className="text-xs text-gray-300">Download on the</div>
+                          <div className="text-sm font-semibold text-white">App Store</div>
+                        </div>
+                      </a>
+                    </div>
+
+                    {/* Features */}
+                    <div className="flex items-center justify-center gap-6 text-sm text-[#4B5C58]">
+                      <div className="flex items-center gap-1">
+                        <div className="w-4 h-4 rounded-full bg-[#6EDC8C] flex items-center justify-center">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
+                            <circle cx="12" cy="12" r="10"/>
+                          </svg>
+                        </div>
+                        <span>24x7 Doctor Support</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-4 h-4 rounded-full bg-[#6EDC8C] flex items-center justify-center">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                          </svg>
+                        </div>
+                        <span>₹0 Consultation Fee*</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           <div className="flex-1 flex justify-center mt-8 md:mt-0">
@@ -247,12 +295,85 @@ const AdvertisingDoctorsPage = () => {
           <p className="text-[#4B5C58] mb-6">
             Join thousands of patients who trust Vydhyo for their healthcare needs.
           </p>
-          <button 
-            className="bg-[#1A3B34] text-white px-8 py-3 rounded-md font-semibold hover:bg-[#17412d] transition"
-            onClick={handleGetStarted}
-          >
-            Get Started Today
-          </button>
+          <div className="relative inline-block">
+            <button 
+              className="bg-[#1A3B34] text-white px-8 py-3 rounded-md font-semibold hover:bg-[#17412d] transition"
+              onClick={handleGetStarted}
+            >
+              Get Started Today
+            </button>
+            
+            {/* Dropdown for Get Started button */}
+            {showDropdown && (
+              <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-white rounded-lg shadow-xl border p-6 w-96 z-10">
+                <div className="text-center">
+                  <div className="bg-[#4A90E2] text-white px-4 py-1 rounded-full text-sm font-medium mb-4 inline-block">
+                    GET THE APP
+                  </div>
+                  <h3 className="text-xl font-bold text-[#1A3B34] mb-2">
+                    Coming soon Vydhyo - India's Trusted Doctors App!
+                  </h3>
+                  <p className="text-[#4B5C58] text-sm mb-6 leading-relaxed">
+                    Connect with 10,000+ verified doctors across India. Book instant video consultations, 
+                    order medicines, get lab tests done, and access your health records - all in one app. 
+                    Available in Hindi, English, and 8 other Indian languages.
+                  </p>
+                  
+                  {/* App Store Buttons */}
+                  <div className="flex gap-3 justify-center mb-6">
+                    <a
+                      href="https://play.google.com/store"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-black rounded-lg px-4 py-2 flex items-center gap-2 hover:bg-gray-800 transition"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                        <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.61 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/>
+                      </svg>
+                      <div className="text-left">
+                        <div className="text-xs text-gray-300">GET IT ON</div>
+                        <div className="text-sm font-semibold text-white">Google Play</div>
+                      </div>
+                    </a>
+                    <a
+                      href="https://apps.apple.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-black rounded-lg px-4 py-2 flex items-center gap-2 hover:bg-gray-800 transition"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                        <path d="M18.71,19.5C17.88,20.74 17,21.95 15.66,21.97C14.32,22 13.89,21.18 12.37,21.18C10.84,21.18 10.37,21.95 9.1,22C7.79,22.05 6.8,20.68 5.96,19.47C4.25,17 2.94,12.45 4.7,9.39C5.57,7.87 7.13,6.91 8.82,6.88C10.1,6.86 11.32,7.75 12.11,7.75C12.89,7.75 14.37,6.68 15.92,6.84C16.57,6.87 18.39,7.1 19.56,8.82C19.47,8.88 17.39,10.19 17.41,12.63C17.44,15.65 20.06,16.66 20.09,16.67C20.06,16.74 19.67,18.11 18.71,19.5M13,3.5C13.73,2.67 14.94,2.04 15.94,2C16.07,3.17 15.6,4.35 14.9,5.19C14.21,6.04 13.07,6.7 11.95,6.61C11.8,5.46 12.36,4.26 13,3.5Z"/>
+                      </svg>
+                      <div className="text-left">
+                        <div className="text-xs text-gray-300">Download on the</div>
+                        <div className="text-sm font-semibold text-white">App Store</div>
+                      </div>
+                    </a>
+                  </div>
+
+                  {/* Features */}
+                  <div className="flex items-center justify-center gap-6 text-sm text-[#4B5C58]">
+                    <div className="flex items-center gap-1">
+                      <div className="w-4 h-4 rounded-full bg-[#6EDC8C] flex items-center justify-center">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
+                          <circle cx="12" cy="12" r="10"/>
+                        </svg>
+                      </div>
+                      <span>24x7 Doctor Support</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-4 h-4 rounded-full bg-[#6EDC8C] flex items-center justify-center">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                      </div>
+                      <span>₹0 Consultation Fee*</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
@@ -290,7 +411,8 @@ const AdvertisingDoctorsPage = () => {
           </div>
         </div>
       </footer>
-    </div>
+    </div></>
+    
   );
 };
 
