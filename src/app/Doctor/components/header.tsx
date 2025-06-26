@@ -14,10 +14,12 @@ const AppHeader = () => {
     {
       key: "1",
       label: "Profile",
+      onClick: () => router.push("/Doctor/profile"),
     },
     {
       key: "2",
       label: "Settings",
+      onClick: () => router.push("/Doctor/app/settings"),
     },
     {
       key: "3",
@@ -46,18 +48,18 @@ const AppHeader = () => {
       <Header
         style={
           {
-            position: "fixed",
-            top: 0,
             width: "100%",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            padding: "0 24px",
             background: "#fff",
             borderBottom: "1px solid #f0f0f0",
             height: "64px",
             zIndex: 1000,
-            paddingTop: "24px",
+            position: "fixed",
+            top: 0,
+            paddingTop: "12px",
+            padding: "0 24px",
             paddingBottom: "12px",
           } as CSSProperties
         }
@@ -68,6 +70,7 @@ const AppHeader = () => {
               display: "flex",
               alignItems: "center",
               cursor: "pointer",
+              paddingTop: "20px",
             } as CSSProperties
           }
           onClick={() => router.push("/Admin/app/dashboard")}
@@ -77,11 +80,10 @@ const AppHeader = () => {
             alt="Logo"
             style={
               {
-                width: "140px",
-                height: "120px", // Fixed height
+                width: "120px",
+                height: "120px",
                 borderRadius: "8px",
                 marginRight: "12px",
-                objectFit: "contain",
               } as CSSProperties
             }
           />
