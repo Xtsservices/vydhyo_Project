@@ -347,9 +347,17 @@ const Login = () => {
           <div className="w-full max-w-md">
             {/* Header */}
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {otpSent ? "Enter OTP" : "Login"}
-              </h1>
+                <div className="flex items-center justify-center gap-3 mb-2">
+                  <img
+                    src="/images/vydh_logo.png"
+                    alt="Logo"
+                    className="h-20 w-40"
+                    style={{ maxWidth: 90 }}
+                  />
+                  <h1 className="text-3xl font-bold text-gray-900">
+                    {otpSent ? "Enter OTP" : "Login"}
+                  </h1>
+                </div>
               {!otpSent && (
                 <p className="text-gray-600">
                   Enter your registered mobile number to continue
