@@ -45,7 +45,7 @@ const AppHeader = () => {
       sessionStorage.clear();
 
       // Redirect to login page
-      router.push("/Admin/app/login");
+      router.push("/LandingPage/login");
     }
 
     // Handle other menu items
