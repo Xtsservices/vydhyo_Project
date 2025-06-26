@@ -369,7 +369,7 @@ const SuperAdminDashboard: React.FC = () => {
       icon: <MessageOutlined />,
       color: '#1890ff',
       change: '+5% this week',
-      onClick: () => router.push('/SuperAdmin/app/open-messages-card-info'),
+      onClick: () => router.push('/SuperAdmin/app/openMessages'),
     },
     {
       title: 'Closed Messages',
@@ -377,7 +377,7 @@ const SuperAdminDashboard: React.FC = () => {
       icon: <MessageOutlined />,
       color: '#52c41a',
       change: '+8% this month',
-      onClick: () => router.push('/SuperAdmin/app/closed-messages-card-info'),
+      onClick: () => router.push('/SuperAdmin/app/openMessages'),
     },
     {
       title: 'Total Messages',
@@ -385,7 +385,7 @@ const SuperAdminDashboard: React.FC = () => {
       icon: <MessageOutlined />,
       color: '#eb2f96',
       change: '+12% this month',
-      onClick: () => router.push('/SuperAdmin/app/total-messages-card-info'),
+      onClick: () => router.push('/SuperAdmin/app/openMessages'),
     },
   ];
 
