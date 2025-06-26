@@ -332,7 +332,9 @@ const SuperAdminDashboard: React.FC = () => {
   const secondRowStats: StatCard[] = [
     {
       title: 'Today Revenue',
-      value: dashboardData.totalAmount.today,
+      value: dashboardData.totalAmount.today
+        ? Number(dashboardData.totalAmount.today).toFixed(2)
+        : dashboardData.totalAmount.today,
       icon: <span style={{ fontSize: 20 }}>₹</span>,
       color: '#faad14',
       change: '+5% from yesterday',
@@ -340,7 +342,9 @@ const SuperAdminDashboard: React.FC = () => {
     },
     {
       title: 'This Week Revenue',
-      value: dashboardData.totalAmount.week,
+      value: dashboardData.totalAmount.week
+        ? Number(dashboardData.totalAmount.week).toFixed(2)
+        : dashboardData.totalAmount.week,
       icon: <span style={{ fontSize: 20 }}>₹</span>,
       color: '#13c2c2',
       change: '+15% from last week',
@@ -348,7 +352,9 @@ const SuperAdminDashboard: React.FC = () => {
     },
     {
       title: 'This Month Revenue',
-      value: dashboardData.totalAmount.month,
+      value: dashboardData.totalAmount.month
+        ? Number(dashboardData.totalAmount.month).toFixed(2)
+        : dashboardData.totalAmount.month,
       icon: <span style={{ fontSize: 20 }}>₹</span>,
       color: '#722ed1',
       change: '+25% this month',
