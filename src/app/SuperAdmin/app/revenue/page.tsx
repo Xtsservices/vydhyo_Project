@@ -11,7 +11,7 @@ import {
   Tag,
   Space,
 } from 'antd';
-// import { Pie } from '@ant-design/charts';
+import { Pie } from '@ant-design/charts';
 import AppHeader from '../../components/header';
 import SideHeader from '../../components/sideheader';
 

@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AppHeader from '../../components/header';
 import SideHeader from '../../components/sideheader';
-import type { Dayjs } from 'dayjs';
 import {
   Layout,
   Card,
@@ -19,28 +18,22 @@ import {
   theme,
   Table,
   Tag,
-  DatePicker,
   Progress,
   message,
-  Switch,
-  Select
+  Select,
 } from 'antd';
 import {
   UserOutlined,
-  TeamOutlined,
-  CalendarOutlined,
   SearchOutlined,
-  MedicineBoxOutlined,
-  HeartOutlined,
-  DollarOutlined,
   UsergroupAddOutlined,
   MessageOutlined,
-  UserAddOutlined,
   CheckCircleOutlined,
+  CloseCircleOutlined,
+  VideoCameraOutlined,
+  HomeOutlined,
 } from '@ant-design/icons';
+import type { ColumnsType } from 'antd/es/table';
 import {
-  LineChart,
-  Line,
   AreaChart,
   Area,
   XAxis,
@@ -53,400 +46,430 @@ import {
   Cell,
   Legend,
   BarChart,
-  Bar
+  Bar,
+  LineChart,
+  Line,
 } from 'recharts';
+import { apiGet } from '@/app/Admin/app/auth/api';
 
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;
 const { useToken } = theme;
 const { Option } = Select;
 
-const SuperAdminDashboard = () => {
+interface StatCard {
+  title: string;
+  value: string | number;
+  icon: React.ReactElement;
+  color: string;
+  change: string;
+  onClick: () => void;
+}
+
+interface Doctor {
+  key: string;
+  name: string;
+  specialty: string;
+  appointments: number;
+  rating: number;
+  avatar: string;
+}
+
+interface Request {
+  key: string;
+  id: string;
+  userName: string;
+  userAvatar: string;
+  type: string;
+  date: string;
+  status: string;
+}
+
+interface RevenueData {
+  name: string;
+  revenue: number;
+}
+
+interface AppointmentData {
+  name: string;
+  value: number;
+  color: string;
+}
+
+interface OnboardingData {
+  name: string;
+  patients: number;
+  doctors: number;
+}
+
+interface SalesData {
+  name: string;
+  online: number;
+  offline: number;
+}
+
+interface DashboardData {
+  success: boolean;
+  doctors: {
+    pending: number;
+    approved: number;
+    rejected: number;
+  };
+  messages: {
+    open: number;
+    inprogress: number;
+    completed: number;
+  };
+  totalAmount: {
+    today: number;
+    week: number;
+    month: number;
+  };
+  appointmentTypes: {
+    'In-Person': number;
+    Video: number;
+    'home-visit': number;
+  };
+}
+
+interface TooltipPayload {
+  value: number;
+  name: string;
+}
+
+// Dummy data for sales progress chart
+const salesData: SalesData[] = [
+  { name: 'Jan', online: 12000, offline: 8000 },
+  { name: 'Feb', online: 15000, offline: 9000 },
+  { name: 'Mar', online: 18000, offline: 11000 },
+  { name: 'Apr', online: 20000, offline: 13000 },
+  { name: 'May', online: 22000, offline: 14000 },
+  { name: 'Jun', online: 25000, offline: 16000 },
+];
+
+// Dummy data for onboarding chart
+const onboardingData: OnboardingData[] = [
+  { name: 'Jan', patients: 120, doctors: 30 },
+  { name: 'Feb', patients: 150, doctors: 40 },
+  { name: 'Mar', patients: 180, doctors: 50 },
+  { name: 'Apr', patients: 200, doctors: 60 },
+  { name: 'May', patients: 220, doctors: 70 },
+  { name: 'Jun', patients: 250, doctors: 80 },
+];
+
+const weeklyRevenueData: RevenueData[] = [
+  { name: 'Mon', revenue: 12000 },
+  { name: 'Tue', revenue: 15000 },
+  { name: 'Wed', revenue: 8000 },
+  { name: 'Thu', revenue: 18000 },
+  { name: 'Fri', revenue: 22000 },
+  { name: 'Sat', revenue: 25000 },
+  { name: 'Sun', revenue: 20000 },
+];
+
+const monthlyRevenueData: RevenueData[] = [
+  { name: 'Jan', revenue: 320000 },
+  { name: 'Feb', revenue: 280000 },
+  { name: 'Mar', revenue: 420000 },
+  { name: 'Apr', revenue: 380000 },
+  { name: 'May', revenue: 450000 },
+  { name: 'Jun', revenue: 520000 },
+];
+
+const appointmentsData: AppointmentData[] = [
+  { name: 'Completed', value: 450, color: '#52c41a' },
+  { name: 'Scheduled', value: 180, color: '#1890ff' },
+  { name: 'Cancelled', value: 45, color: '#ff4d4f' },
+  { name: 'Rescheduled', value: 32, color: '#faad14' },
+];
+
+const popularDoctorsData: Doctor[] = [
+  {
+    key: '1',
+    name: 'Dr. Sarah Johnson',
+    specialty: 'Cardiology',
+    appointments: 156,
+    rating: 4.9,
+    avatar: 'https://i.pravatar.cc/40?img=1',
+  },
+  {
+    key: '2',
+    name: 'Dr. Michael Chen',
+    specialty: 'Neurology',
+    appointments: 142,
+    rating: 4.8,
+    avatar: 'https://i.pravatar.cc/40?img=2',
+  },
+  {
+    key: '3',
+    name: 'Dr. Emily Davis',
+    specialty: 'Pediatrics',
+    appointments: 128,
+    rating: 4.7,
+    avatar: 'https://i.pravatar.cc/40?img=3',
+  },
+  {
+    key: '4',
+    name: 'Dr. James Wilson',
+    specialty: 'Orthopedics',
+    appointments: 115,
+    rating: 4.6,
+    avatar: 'https://i.pravatar.cc/40?img=4',
+  },
+  {
+    key: '5',
+    name: 'Dr. Lisa Brown',
+    specialty: 'Dermatology',
+    appointments: 98,
+    rating: 4.5,
+    avatar: 'https://i.pravatar.cc/40?img=5',
+  },
+];
+
+const updatedRequests: Request[] = [
+  {
+    key: '1',
+    id: 'REQ001',
+    userName: 'John Doe',
+    userAvatar: 'https://i.pravatar.cc/40?img=15',
+    type: 'Profile Update',
+    date: '24 Oct 2023',
+    status: 'Approved',
+  },
+  {
+    key: '2',
+    id: 'REQ002',
+    userName: 'Jane Smith',
+    userAvatar: 'https://i.pravatar.cc/40?img=16',
+    type: 'Document Upload',
+    date: '23 Oct 2023',
+    status: 'Pending',
+  },
+  {
+    key: '3',
+    id: 'REQ003',
+    userName: 'Robert Brown',
+    userAvatar: 'https://i.pravatar.cc/40?img=17',
+    type: 'Profile Update',
+    date: '22 Oct 2023',
+    status: 'Rejected',
+  },
+];
+
+const SuperAdminDashboard: React.FC = () => {
   const { token } = useToken();
   const router = useRouter();
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [doctors, setDoctors] = useState([]);
-  const [doctorsCount, setDoctorsCount] = useState(0);
-  const [revenueTimeframe, setRevenueTimeframe] = useState('weekly');
-  const [signinsTimeframe, setSigninsTimeframe] = useState('weekly');
-  const [patientsTimeframe, setPatientsTimeframe] = useState('weekly');
-  // const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
+  const [revenueTimeframe, setRevenueTimeframe] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
+  const [dashboardData, setDashboardData] = useState<DashboardData>({
+    success: false,
+    doctors: { pending: 0, approved: 0, rejected: 0 },
+    messages: { open: 0, inprogress: 0, completed: 0 },
+    totalAmount: { today: 0, week: 0, month: 0 },
+    appointmentTypes: { 'In-Person': 0, Video: 0, 'home-visit': 0 },
+  });
 
-  // Top statistics data
-  const [topStats, setTopStats] = useState([
-    {
-      title: 'New Sign-ins',
-      value: 1234,
-      icon: <UserAddOutlined />,
-      color: '#1890ff',
-      change: '+12% from last week',
-      // onClick: () => {}, // No navigation
-    },
-    {
-      title: 'New Doctors',
-      value: 45,
-      icon: <MedicineBoxOutlined />,
-      color: '#722ed1',
-      change: '+8% this month',
-      onClick: () => router.push('/SuperAdmin/app/doctors'), // Navigate to doctors
-    },
-    {
-      title: 'New Patients',
-      value: 156,
-      icon: <TeamOutlined />,
-      color: '#fa8c16',
-      change: '+15% this month',
-      onClick: () => router.push('/SuperAdmin/app/patients'), // Navigate to patienys
-    },
-    {
-      title: 'New Messages',
-      value: 89,
-      icon: <MessageOutlined />,
-      color: '#13c2c2',
-      change: '+5% this week',
-      // onClick: () => {}, // No navigation
-    },
-    {
-      title: 'New Updates',
-      value: 89,
-      icon: <MessageOutlined />,
-      color: '#13c2c2',
-      change: '+5% this week',
-      // onClick: () => {}, // No navigation
-    },
-    {
-      title: 'Total Revenue',
-      value: 89,
-      icon: <span style={{ fontSize: 20 }}>₹</span>,
-      color: '#13c2c2',
-      change: '+5% this week',
-      onClick: () => router.push('/SuperAdmin/app/revenue'),
-    }
-  ]);
-
-  // Secondary statistics data
-  const [secondaryStats, setSecondaryStats] = useState([
-    {
-      title: 'Active Doctors',
-      value: 78,
-      icon: <CheckCircleOutlined />,
-      color: '#52c41a',
-      description: 'At least 1 appointment this week'
-    },
-    {
-      title: 'Active Patients',
-      value: 234,
-      icon: <HeartOutlined />,
-      color: '#eb2f96',
-      description: 'Recent activity this week'
-    },
-    {
-      title: 'Total Doctors',
-      value: 125,
-      icon: <MedicineBoxOutlined />,
-      color: '#13c2c2',
-      description: 'Total onboarded'
-    }
-  ]);
-
-  // Define type for statsData items
-  type StatCard = {
-    title: string;
-    value: number | string;
-    color: string;
-    onClick: () => void;
-    enabled: boolean;
+  const getGreeting = (): string => {
+    const hour = new Date().getHours();
+    if (hour < 12) return '☀️ Good Morning';
+    if (hour < 18) return '🌤️ Good Afternoon';
+    return '🌌 Good Evening';
   };
 
-  // Main stats cards (original)
-  const [statsData, setStatsData] = useState<StatCard[]>([
-    // {
-    //   title: 'Doctors',
-    //   value: 0,
-    //   color: '#1890ff',
-    //   onClick: () => router.push('/Admin/app/doctors'),
-    //   enabled: true
-    // },
-    // {
-    //   title: 'Patients',
-    //   value: 487,
-    //   color: '#52c41a',
-    //   onClick: () => router.push('/Admin/app/patients'),
-    //   enabled: true
-    // },
-    // {
-    //   title: 'Appointment',
-    //   value: 485,
-    //   color: '#ff4d4f',
-    //   onClick: () => router.push('/Admin/app/appointments'),
-    //   enabled: true
-    // },
-    // {
-    //   title: 'Revenue',
-    //   value: '$62523',
-    //   color: '#faad14',
-    //   onClick: () => router.push('/Admin/app/doctors'),
-    //   enabled: true
-    // }
-  ]);
+  const greeting = getGreeting();
 
-  // Revenue chart data (weekly/monthly)
-  const weeklyRevenueData = [
-    { name: 'Mon', revenue: 12000 },
-    { name: 'Tue', revenue: 15000 },
-    { name: 'Wed', revenue: 8000 },
-    { name: 'Thu', revenue: 18000 },
-    { name: 'Fri', revenue: 22000 },
-    { name: 'Sat', revenue: 25000 },
-    { name: 'Sun', revenue: 20000 }
-  ];
+  const fetchDashboardData = async (): Promise<void> => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
 
-  const monthlyRevenueData = [
-    { name: 'Jan', revenue: 320000 },
-    { name: 'Feb', revenue: 280000 },
-    { name: 'Mar', revenue: 420000 },
-    { name: 'Apr', revenue: 380000 },
-    { name: 'May', revenue: 450000 },
-    { name: 'Jun', revenue: 520000 }
-  ];
+      if (!token) {
+        message.warning('No access token found, redirecting to login');
+        router.push('/login');
+        return;
+      }
 
-  // Appointments pie chart data
-  const appointmentsData = [
-    { name: 'Completed', value: 450, color: '#52c41a' },
-    { name: 'Scheduled', value: 180, color: '#1890ff' },
-    { name: 'Cancelled', value: 45, color: '#ff4d4f' },
-    { name: 'Rescheduled', value: 32, color: '#faad14' }
-  ];
-
-  // Popular doctors data
-  const popularDoctorsData = [
-    {
-      key: '1',
-      name: 'Dr. Sarah Johnson',
-      specialty: 'Cardiology',
-      appointments: 156,
-      rating: 4.9,
-      avatar: 'https://i.pravatar.cc/40?img=1'
-    },
-    {
-      key: '2',
-      name: 'Dr. Michael Chen',
-      specialty: 'Neurology',
-      appointments: 142,
-      rating: 4.8,
-      avatar: 'https://i.pravatar.cc/40?img=2'
-    },
-    {
-      key: '3',
-      name: 'Dr. Emily Davis',
-      specialty: 'Pediatrics',
-      appointments: 128,
-      rating: 4.7,
-      avatar: 'https://i.pravatar.cc/40?img=3'
-    },
-    {
-      key: '4',
-      name: 'Dr. James Wilson',
-      specialty: 'Orthopedics',
-      appointments: 115,
-      rating: 4.6,
-      avatar: 'https://i.pravatar.cc/40?img=4'
-    },
-    {
-      key: '5',
-      name: 'Dr. Lisa Brown',
-      specialty: 'Dermatology',
-      appointments: 98,
-      rating: 4.5,
-      avatar: 'https://i.pravatar.cc/40?img=5'
+      const response = await apiGet('/superAdmin/superAdminDashbaord');
+      if (response.status === 200 && response.data.success) {
+        setDashboardData(response.data);
+      } else {
+        message.error('Failed to load dashboard data');
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      message.error('Failed to load dashboard data');
     }
+  };
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [router]);
+  const firstRowStats: StatCard[] = [
+    {
+      title: 'New Doctors',
+      value: dashboardData.doctors.pending,
+      icon: <UsergroupAddOutlined />,
+      color: '#1890ff',
+      change: '+8% this month',
+      onClick: () => router.push('/SuperAdmin/app/doctorApproval'),
+    },
+    {
+      title: 'Approved Doctors',
+      value: dashboardData.doctors.approved,
+      icon: <CheckCircleOutlined />,
+      color: '#52c41a',
+      change: '+10% this month',
+      onClick: () => router.push('/SuperAdmin/app/doctors?status=approved'),
+    },
+    {
+      title: 'Rejected Doctors',
+      value: dashboardData.doctors.rejected,
+      icon: <CloseCircleOutlined />,
+      color: '#ff4d4f',
+      change: '-2% this month',
+      onClick: () => router.push('/SuperAdmin/app/doctors?status=rejected'),
+    },
   ];
 
-  // Patients list data
-  const patientsList = [
+  const secondRowStats: StatCard[] = [
     {
-      key: '1',
-      name: 'Charlene Reed',
-      phone: '8286329170',
-      lastVisit: '20 Oct 2023',
-      paid: '$100.00',
-      avatar: 'https://i.pravatar.cc/40?img=6'
+      title: 'Today Revenue',
+      value: dashboardData.totalAmount.today,
+      icon: <span style={{ fontSize: 20 }}>₹</span>,
+      color: '#faad14',
+      change: '+5% from yesterday',
+      onClick: () => router.push('/SuperAdmin/app/today-revenue-card-info'),
     },
     {
-      key: '2',
-      name: 'Travis Trimble',
-      phone: '2077299974',
-      lastVisit: '22 Oct 2023',
-      paid: '$200.00',
-      avatar: 'https://i.pravatar.cc/40?img=7'
+      title: 'This Week Revenue',
+      value: dashboardData.totalAmount.week,
+      icon: <span style={{ fontSize: 20 }}>₹</span>,
+      color: '#13c2c2',
+      change: '+15% from last week',
+      onClick: () => router.push('/SuperAdmin/app/this-week-revenue-card-info'),
     },
     {
-      key: '3',
-      name: 'Carl Kelly',
-      phone: '2607247769',
-      lastVisit: '21 Oct 2023',
-      paid: '$250.00',
-      avatar: 'https://i.pravatar.cc/40?img=8'
+      title: 'This Month Revenue',
+      value: dashboardData.totalAmount.month,
+      icon: <span style={{ fontSize: 20 }}>₹</span>,
+      color: '#722ed1',
+      change: '+25% this month',
+      onClick: () => router.push('/SuperAdmin/app/this-month-revenue-card-info'),
     },
-    {
-      key: '4',
-      name: 'Michelle Fairfax',
-      phone: '5043686874',
-      lastVisit: '21 Sep 2023',
-      paid: '$150.00',
-      avatar: 'https://i.pravatar.cc/40?img=9'
-    }
   ];
 
-  // Appointment List Data
-  const appointmentsList = [
+  const thirdRowStats: StatCard[] = [
     {
-      key: '1',
-      id: 'APT001',
-      patientName: 'Charlene Reed',
-      patientAvatar: 'https://i.pravatar.cc/40?img=10',
-      doctorName: 'Dr. Sarah Johnson',
-      doctorAvatar: 'https://i.pravatar.cc/40?img=1',
-      date: '20 Oct 2023',
-      time: '10:00 AM',
-      status: 'Completed'
+      title: 'Open Messages',
+      value: dashboardData.messages.open,
+      icon: <MessageOutlined />,
+      color: '#1890ff',
+      change: '+5% this week',
+      onClick: () => router.push('/SuperAdmin/app/open-messages-card-info'),
     },
     {
-      key: '2',
-      id: 'APT002',
-      patientName: 'Travis Trimble',
-      patientAvatar: 'https://i.pravatar.cc/40?img=11',
-      doctorName: 'Dr. Michael Chen',
-      doctorAvatar: 'https://i.pravatar.cc/40?img=2',
-      date: '22 Oct 2023',
-      time: '11:00 AM',
-      status: 'Pending'
+      title: 'Closed Messages',
+      value: dashboardData.messages.inprogress,
+      icon: <MessageOutlined />,
+      color: '#52c41a',
+      change: '+8% this month',
+      onClick: () => router.push('/SuperAdmin/app/closed-messages-card-info'),
     },
     {
-      key: '3',
-      id: 'APT003',
-      patientName: 'Carl Kelly',
-      patientAvatar: 'https://i.pravatar.cc/40?img=12',
-      doctorName: 'Dr. Emily Davis',
-      doctorAvatar: 'https://i.pravatar.cc/40?img=3',
-      date: '21 Oct 2023',
-      time: '09:30 AM',
-      status: 'Cancelled'
+      title: 'Total Messages',
+      value: dashboardData.messages.completed,
+      icon: <MessageOutlined />,
+      color: '#eb2f96',
+      change: '+12% this month',
+      onClick: () => router.push('/SuperAdmin/app/total-messages-card-info'),
     },
-    {
-      key: '4',
-      id: 'APT004',
-      patientName: 'Michelle Fairfax',
-      patientAvatar: 'https://i.pravatar.cc/40?img=13',
-      doctorName: 'Dr. James Wilson',
-      doctorAvatar: 'https://i.pravatar.cc/40?img=4',
-      date: '21 Sep 2023',
-      time: '01:00 PM',
-      status: 'Completed'
-    },
-    {
-      key: '5',
-      id: 'APT005',
-      patientName: 'Paul Richard',
-      patientAvatar: 'https://i.pravatar.cc/40?img=14',
-      doctorName: 'Dr. Lisa Brown',
-      doctorAvatar: 'https://i.pravatar.cc/40?img=5',
-      date: '23 Oct 2023',
-      time: '03:00 PM',
-      status: 'Pending'
-    }
   ];
 
-  // Table columns definitions
-  const updatedRequestsColumns = [
+  const fourthRowStats: StatCard[] = [
+    {
+      title: 'In-Person',
+      value: dashboardData.appointmentTypes['In-Person'],
+      icon: <UserOutlined />,
+      color: '#13c2c2',
+      change: '+10% this month',
+      onClick: () => router.push('/SuperAdmin/app/in-person-card-info'),
+    },
+    {
+      title: 'Video',
+      value: dashboardData.appointmentTypes.Video,
+      icon: <VideoCameraOutlined />,
+      color: '#fa8c16',
+      change: '+15% this month',
+      onClick: () => router.push('/SuperAdmin/app/video-card-info'),
+    },
+    {
+      title: 'Home Visit',
+      value: dashboardData.appointmentTypes['home-visit'],
+      icon: <HomeOutlined />,
+      color: '#722ed1',
+      change: '+5% this month',
+      onClick: () => router.push('/SuperAdmin/app/home-visit-card-info'),
+    },
+  ];
+
+  const updatedRequestsColumns: ColumnsType<Request> = [
     {
       title: 'Request ID',
       dataIndex: 'id',
       key: 'id',
       width: 120,
-      render: (text) => <Text style={{ fontSize: '12px' }}>{text}</Text>
+      render: (text: string) => <Text style={{ fontSize: '12px' }}>{text}</Text>,
     },
     {
       title: 'User Name',
       dataIndex: 'userName',
       key: 'userName',
       width: 150,
-      render: (text, record) => (
+      render: (text: string, record: Request) => (
         <Space>
           <Avatar src={record.userAvatar} size="small" />
           <Text strong style={{ fontSize: '12px' }}>{text}</Text>
         </Space>
-      )
+      ),
     },
     {
       title: 'Request Type',
       dataIndex: 'type',
       key: 'type',
       width: 120,
-      render: (text) => <Tag color="blue">{text}</Tag>
+      render: (text: string) => <Tag color="blue">{text}</Tag>,
     },
     {
       title: 'Date',
       dataIndex: 'date',
       key: 'date',
       width: 120,
-      render: (text) => <Text style={{ fontSize: '12px' }}>{text}</Text>
+      render: (text: string) => <Text style={{ fontSize: '12px' }}>{text}</Text>,
     },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
       width: 100,
-      render: (status) => (
+      render: (status: string) => (
         <Tag color={status === 'Approved' ? 'green' : status === 'Pending' ? 'orange' : 'red'}>
           {status}
         </Tag>
-      )
-    }
+      ),
+    },
   ];
 
-  // Example data for updated requests
-  const updatedRequests = [
-    {
-      key: '1',
-      id: 'REQ001',
-      userName: 'John Doe',
-      userAvatar: 'https://i.pravatar.cc/40?img=15',
-      type: 'Profile Update',
-      date: '24 Oct 2023',
-      status: 'Approved'
-    },
-    {
-      key: '2',
-      id: 'REQ002',
-      userName: 'Jane Smith',
-      userAvatar: 'https://i.pravatar.cc/40?img=16',
-      type: 'Document Upload',
-      date: '23 Oct 2023',
-      status: 'Pending'
-    },
-    {
-      key: '3',
-      id: 'REQ003',
-      userName: 'Robert Brown',
-      userAvatar: 'https://i.pravatar.cc/40?img=17',
-      type: 'Profile Update',
-      date: '22 Oct 2023',
-      status: 'Rejected'
-    }
-  ];
-
-  const doctorColumns = [
+  const doctorColumns: ColumnsType<Doctor> = [
     {
       title: 'Doctor',
       dataIndex: 'name',
       key: 'name',
-      render: (text, record) => (
+      render: (text: string, record: Doctor) => (
         <Space>
           <Avatar src={record.avatar} icon={<UserOutlined />} />
           <div>
             <div style={{ fontWeight: 'bold', fontSize: '12px' }}>{text}</div>
-            <Text type="secondary" style={{ fontSize: '11px' }}>{record.specialty}</Text>
+            <Text type="secondary" style={{ fontSize: '11px' }}>
+              {record.specialty}
+            </Text>
           </div>
         </Space>
       ),
@@ -455,7 +478,7 @@ const SuperAdminDashboard = () => {
       title: 'Appointments',
       dataIndex: 'appointments',
       key: 'appointments',
-      render: (appointments) => (
+      render: (appointments: number) => (
         <div>
           <div style={{ fontWeight: 'bold', fontSize: '12px' }}>{appointments}</div>
           <Progress percent={Math.min(appointments / 2, 100)} size="small" showInfo={false} />
@@ -466,540 +489,165 @@ const SuperAdminDashboard = () => {
       title: 'Rating',
       dataIndex: 'rating',
       key: 'rating',
-      render: (rating) => (
+      render: (rating: number) => (
         <Tag color="gold">⭐ {rating}</Tag>
       ),
-    }
+    },
   ];
-
-  const patientColumns = [
-    {
-      title: 'Patient Name',
-      dataIndex: 'name',
-      key: 'name',
-      width: 150,
-      render: (text, record) => (
-        <Space>
-          <Avatar src={record.avatar} size="small" />
-          <Text strong style={{ fontSize: '12px' }}>{text}</Text>
-        </Space>
-      )
-    },
-    {
-      title: 'Phone',
-      dataIndex: 'phone',
-      key: 'phone',
-      width: 120,
-      render: (text) => <Text style={{ fontSize: '12px' }}>{text}</Text>
-    },
-    {
-      title: 'Last Visit',
-      dataIndex: 'lastVisit',
-      key: 'lastVisit',
-      width: 100,
-      render: (text) => <Text style={{ fontSize: '12px' }}>{text}</Text>
-    },
-    {
-      title: 'Paid',
-      dataIndex: 'paid',
-      key: 'paid',
-      width: 80,
-      render: (text) => <Text strong style={{ fontSize: '12px' }}>{text}</Text>
-    }
-  ];
-
-  const appointmentColumns = [
-    {
-      title: 'Appointment ID',
-      dataIndex: 'id',
-      key: 'id',
-      width: 120,
-      render: (text) => <Text style={{ fontSize: '12px' }}>{text}</Text>
-    },
-    {
-      title: 'Patient Name',
-      dataIndex: 'patientName',
-      key: 'patientName',
-      width: 150,
-      render: (text, record) => (
-        <Space>
-          <Avatar src={record.patientAvatar} size="small" />
-          <Text strong style={{ fontSize: '12px' }}>{text}</Text>
-        </Space>
-      )
-    },
-    {
-      title: 'Doctor Name',
-      dataIndex: 'doctorName',
-      key: 'doctorName',
-      width: 150,
-      render: (text, record) => (
-        <Space>
-          <Avatar src={record.doctorAvatar} size="small" />
-          <Text strong style={{ fontSize: '12px' }}>{text}</Text>
-        </Space>
-      )
-    },
-    {
-      title: 'Date',
-      dataIndex: 'date',
-      key: 'date',
-      width: 120,
-      render: (text) => <Text style={{ fontSize: '12px' }}>{text}</Text>
-    },
-    {
-      title: 'Time',
-      dataIndex: 'time',
-      key: 'time',
-      width: 100,
-      render: (text) => <Text style={{ fontSize: '12px' }}>{text}</Text>
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      width: 100,
-      render: (status) => (
-        <Tag color={status === 'Completed' ? 'green' : status === 'Pending' ? 'orange' : 'red'}>
-          {status}
-        </Tag>
-      )
-    }
-  ];
-
-  // API fetch function
-  const fetchUsers = async () => {
-    try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-
-      if (!token) {
-        console.warn('/login');
-        return;
-      }
-
-      const response = await fetch('http://192.168.1.42:3000/users/AllUsers?type=doctor&status=approved', {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        const errText = await response.text();
-        console.error(`API Error: ${response.status} - ${errText}`);
-        throw new Error(`API call failed with status ${response.status}`);
-      }
-
-      const data = await response.json();
-      if (!data || !Array.isArray(data.data)) {
-        throw new Error('Unexpected API response format');
-      }
-
-      setDoctors(data.data);
-      setDoctorsCount(data.data.length);
-
-      console.log('Fetched doctors:', data.data);
-      // setStatsData((prev) => {
-      //   const updated = [...prev];
-      //   updated[0].value = data?.data?.length;
-      //   return updated;
-      // });
-
-    } catch (error) {
-      console.error('fetchUsers error:', error);
-      message.error('Failed to load doctor data');
-    } finally {
-      // setLoading(false);
-    }
-  };
-
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const handleToggleNavigation = (index, checked) => {
-    setStatsData(prevStats => {
-      const newStats = [...prevStats];
-      newStats[index].enabled = checked;
-      return newStats;
-    });
-  };
-
-  const handleCardClick = (index) => {
-    const stat = statsData[index];
-    if (stat.enabled) {
-      stat.onClick();
-    } else {
-      message.warning(`Navigation to ${stat.title} is currently disabled`);
-    }
-  };
 
   return (
     <>
       <AppHeader />
       <Layout className="min-h-screen">
-        <SideHeader  selectedKey = 'dashboard'/>
-
+        <SideHeader selectedKey="dashboard" />
         <Layout>
           <Header
             style={{
               backgroundColor: '#f5f5f5',
-              // borderBottom: '1px solid #f0f0f0',
               padding: '0 16px',
               height: '71px',
               marginTop: '80px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              flexWrap: 'wrap'
+              flexWrap: 'wrap',
             }}
           >
-            <div style={{ flex: 1, minWidth: '200px' }}>
+            <div style={{ flex: 1, minWidth: '200px' ,display: 'flex',justifyContent:"space-between", alignItems: 'center'}}>
               <Title level={2} style={{ margin: 0, fontSize: '30px' }}>
-                Welcome SuperAdmin
+                Welcome Super Admin
               </Title>
-              <Text type="secondary" style={{ margin: 10, marginBottom:'0px', fontSize: '14px' }}>Super Admin Dashboard</Text>
+              <Text style={{ fontSize: '18px', display: 'block', marginTop: 4 }}>
+                {greeting} !
+              </Text>
             </div>
-
-            {/* Pending Approval */}
-            <Space size="middle" style={{ flexWrap: 'wrap' }}>
+            {/* <Space size="middle" style={{ flexWrap: 'wrap' }}>
               <Button
-              type="primary"
-              icon={<UsergroupAddOutlined />}
-              style={{ backgroundColor: '#1890ff' }}
-              onClick={() => {
-                router.push('/SuperAdmin/app/doctorApproval');
-              }}
+                type="primary"
+                icon={<UsergroupAddOutlined />}
+                style={{ backgroundColor: '#1890ff' }}
+                onClick={() => router.push('/SuperAdmin/app/doctor-approval')}
               >
-              Pending Approval
+                Pending Approval
               </Button>
               <Input
-              placeholder="Search here"
-              prefix={<SearchOutlined />}
-              style={{ width: '200px', minWidth: '150px' }}
+                placeholder="Search here"
+                prefix={<SearchOutlined />}
+                style={{ width: '200px', minWidth: '150px' }}
               />
-            </Space>
+            </Space> */}
           </Header>
 
-          <Content style={{ padding: '20px', marginTop: '10px', backgroundColor: '#f5f5f5', minHeight: 'calc(100vh - 64px)' }}>
-
-            {/* Top Statistics Cards */}
-
+          <Content
+            style={{
+              padding: '20px',
+              marginTop: '10px',
+              backgroundColor: '#f5f5f5',
+              minHeight: 'calc(100vh - 64px)',
+            }}
+          >
+            {/* First Row: New Doctors, Approved Doctors, Rejected Doctors */}
             <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
-                {/* New Sign-ins Card */}
-                <Col xs={24} sm={12} md={8}>
-                <Card style={{ borderRadius: '8px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Title level={4} style={{ margin: 0 }}>New Sign‑ins</Title>
-                  <Select
-                    size="small"
-                    value={signinsTimeframe}
-                    onChange={(val) => {
-                    setSigninsTimeframe(val);
-                    message.info(`Timeframe: ${val}`);
-                    }}
-                    style={{ width: 81 }}
-                  >
-                    <Option value="today">Today</Option>
-                    <Option value="weekly">Weekly</Option>
-                    <Option value="monthly">Monthly</Option>
-                    <Option value="yearly">Yearly</Option>
-                    <Option value="calendar">Calendar</Option>
-                  </Select>
-                  </div>
-                  {signinsTimeframe === 'calendar' && (
-                  <DatePicker
-                    style={{ marginTop: 8 }}
-                    onChange={(date) => {
-                    // setSelectedDate(date);
-                    message.success(`Selected date: ${date?.format('YYYY-MM-DD')}`);
-                    }}
-                  />
-                  )}
-                  <Statistic
-                  value={
-                    signinsTimeframe === 'today'
-                    ? 56
-                    : signinsTimeframe === 'weekly'
-                    ? 1234
-                    : signinsTimeframe === 'monthly'
-                    ? 4321
-                    : signinsTimeframe === 'yearly'
-                    ? 15000
-                    : 1234 // default
-                  }
-                  prefix={<UserAddOutlined style={{ color: '#1890ff' }} />}
-                  valueStyle={{ color: '#1890ff' }}
-                  />
-                  <Text type="secondary" style={{ fontSize: '12px' }}>
-                  {signinsTimeframe === 'today'
-                    ? '+2% from yesterday'
-                    : signinsTimeframe === 'weekly'
-                    ? '+12% from last week'
-                    : signinsTimeframe === 'monthly'
-                    ? '+8% from last month'
-                    : signinsTimeframe === 'yearly'
-                    ? '+20% from last year'
-                    : '+12% from last week'}
-                  </Text>
-                </Card>
-                </Col>
-
-                {/* New Doctors Card */}
-                <Col xs={24} sm={12} md={8}>
+              {firstRowStats.map((stat, index) => (
+                <Col xs={24} sm={12} md={8} key={index}>
                   <Card
-                    style={{ borderRadius: '8px', cursor: 'pointer' }}
                     hoverable
-                    onClick={(e) => {
-                      // Prevent navigation if dropdown or datepicker is clicked
-                      if (
-                        (e.target as HTMLElement).closest('.no-card-nav')
-                      ) return;
-                      if (typeof topStats[1].onClick === 'function') {
-                        topStats[1].onClick();
-                      }
-                    }}
+                    style={{ borderRadius: '8px', cursor: 'pointer' }}
+                    onClick={stat.onClick}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Title level={4} style={{ margin: 0 }}>New Doctors</Title>
-                      <Select
-                        className="no-card-nav"
-                        size="small"
-                        value={revenueTimeframe}
-                        onChange={(val) => {
-                          setRevenueTimeframe(val);
-                          message.info(`Timeframe: ${val}`);
-                        }}
-                        style={{ width: 81 }}
-                        onClick={e => e.stopPropagation()}
-                      >
-                        <Option value="today">Today</Option>
-                        <Option value="weekly">Weekly</Option>
-                        <Option value="monthly">Monthly</Option>
-                        <Option value="yearly">Yearly</Option>
-                        <Option value="calendar">Calendar</Option>
-                      </Select>
-                    </div>
-                    {revenueTimeframe === 'calendar' && (
-                      <DatePicker
-                        className="no-card-nav"
-                        style={{ marginTop: 8 }}
-                        onChange={(date) => {
-                          // setSelectedDate(date);
-                          message.success(`Selected date: ${date?.format('YYYY-MM-DD')}`);
-                        }}
-                        onClick={e => e.stopPropagation()}
-                      />
-                    )}
                     <Statistic
-                      value={
-                        revenueTimeframe === 'weekly'
-                          ? 45
-                          : revenueTimeframe === 'monthly'
-                          ? 180
-                          : revenueTimeframe === 'yearly'
-                          ? 1200
-                          : 45 // default
+                      title={stat.title}
+                      value={stat.value}
+                      prefix={
+                        React.isValidElement(stat.icon)
+                          ? React.cloneElement(stat.icon, { style: { color: stat.color } })
+                          : <span style={{ color: stat.color }}>{stat.icon}</span>
                       }
-                      prefix={React.cloneElement(topStats[1].icon, { style: { color: topStats[1].color } })}
-                      valueStyle={{ color: topStats[1].color }}
+                      valueStyle={{ color: stat.color, fontSize: '24px' }}
                     />
                     <Text type="secondary" style={{ fontSize: '12px' }}>
-                      {revenueTimeframe === 'weekly'
-                        ? '+8% this week'
-                        : revenueTimeframe === 'monthly'
-                        ? '+32% this month'
-                        : revenueTimeframe === 'yearly'
-                        ? '+96% this year'
-                        : topStats[1].change}
+                      {stat.change}
                     </Text>
                   </Card>
                 </Col>
-
-                {/* New Patients Card */}
-                <Col xs={24} sm={12} md={8}>
-                <Card
-                  style={{ borderRadius: '8px', cursor: 'pointer' }}
-                  hoverable
-                  onClick={e => {
-                  // Prevent navigation if dropdown or datepicker is clicked
-                  if ((e.target as HTMLElement).closest('.no-card-nav')) return;
-                  if (typeof topStats[2].onClick === 'function') {
-                    topStats[2].onClick();
-                  }
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Title level={4} style={{ margin: 0 }}>New Patients</Title>
-                  <Select
-                    className="no-card-nav"
-                    size="small"
-                    value={patientsTimeframe}
-                    onChange={val => {
-                    setPatientsTimeframe(val);
-                    message.info(`Timeframe: ${val}`);
-                    }}
-                    style={{ width: 81 }}
-                    onClick={e => e.stopPropagation()}
-                  >
-                    <Option value="today">Today</Option>
-                    <Option value="weekly">Weekly</Option>
-                    <Option value="monthly">Monthly</Option>
-                    <Option value="yearly">Yearly</Option>
-                    <Option value="calendar">Calendar</Option>
-                  </Select>
-                  </div>
-                  {patientsTimeframe === 'calendar' && (
-                  <DatePicker
-                    className="no-card-nav"
-                    style={{ marginTop: 8 }}
-                    onChange={date => {
-                    // setPatientsSelectedDate(date);
-                    message.success(`Selected date: ${date?.format('YYYY-MM-DD')}`);
-                    }}
-                    onClick={e => e.stopPropagation()}
-                  />
-                  )}
-                  <Statistic
-                  value={
-                    patientsTimeframe === 'today'
-                    ? 12
-                    : patientsTimeframe === 'weekly'
-                    ? 156
-                    : patientsTimeframe === 'monthly'
-                    ? 600
-                    : patientsTimeframe === 'yearly'
-                    ? 7200
-                    : 156 // default
-                  }
-                  prefix={React.cloneElement(topStats[2].icon, { style: { color: topStats[2].color } })}
-                  valueStyle={{ color: topStats[2].color }}
-                  />
-                  <Text type="secondary" style={{ fontSize: '12px' }}>
-                  {patientsTimeframe === 'today'
-                    ? '+1% from yesterday'
-                    : patientsTimeframe === 'weekly'
-                    ? '+15% this week'
-                    : patientsTimeframe === 'monthly'
-                    ? '+60% this month'
-                    : patientsTimeframe === 'yearly'
-                    ? '+180% this year'
-                    : topStats[2].change}
-                  </Text>
-                </Card>
-                </Col>
-
-              {/* The rest of the topStats cards */}
-              {topStats.slice(3).map((stat, index) => (
-                <Col xs={24} sm={12} md={8} key={index + 3}>
-                  <Card style={{ borderRadius: '8px' }}>
-                    <Statistic
-                      title={stat.title}
-                      value={stat.value}
-                      prefix={React.cloneElement(stat.icon, { style: { color: stat.color } })}
-                      valueStyle={{ color: stat.color }}
-                    />
-                    <Text type="secondary" style={{ fontSize: '12px' }}>{stat.change}</Text>
-                  </Card>
-                </Col>
-              ))}
-            </Row>
-            {/* Secondary Statistics */}
-            <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
-              {secondaryStats.map((stat, index) => (
-                <Col xs={24} sm={8} key={index}>
-                  <Card style={{ borderRadius: '8px' }}>
-                    <Statistic
-                      title={stat.title}
-                      value={stat.value}
-                      prefix={React.cloneElement(stat.icon, { style: { color: stat.color } })}
-                      valueStyle={{ color: stat.color }}
-                    />
-                    <Text type="secondary" style={{ fontSize: '12px' }}>{stat.description}</Text>
-                  </Card>
-                </Col>
               ))}
             </Row>
 
-            {/* Original Stats Cards with Toggle */}
+            {/* Second Row: Today Revenue, This Week Revenue, This Month Revenue */}
             <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
-              {statsData.map((stat, index) => (
-                <Col xs={24} sm={12} md={12} lg={6} xl={6} key={index}>
+              {secondRowStats.map((stat, index) => (
+                <Col xs={24} sm={12} md={8} key={index}>
                   <Card
-                    style={{
-                      borderRadius: '8px',
-                      textAlign: 'center',
-                      minHeight: '140px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
-                      cursor: stat.enabled ? 'pointer' : 'not-allowed',
-                      transition: 'all 0.3s ease',
-                      opacity: stat.enabled ? 1 : 0.7,
-                      position: 'relative'
-                    }}
-                    hoverable={stat.enabled}
-                    onClick={() => handleCardClick(index)}
+                    hoverable
+                    style={{ borderRadius: '8px', cursor: 'pointer' }}
+                    onClick={stat.onClick}
                   >
-                    <div style={{
-                      width: '50px',
-                      height: '50px',
-                      borderRadius: '50%',
-                      backgroundColor: stat.color,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      margin: '0 auto 12px',
-                    }}>
-                      {index === 0 && <TeamOutlined style={{ color: 'white', fontSize: '20px' }} />}
-                      {index === 1 && <UserOutlined style={{ color: 'white', fontSize: '20px' }} />}
-                      {index === 2 && <CalendarOutlined style={{ color: 'white', fontSize: '20px' }} />}
-                      {index === 3 && <DollarOutlined style={{ color: 'white', fontSize: '20px' }} />}
-                    </div>
-                    <Title level={3} style={{ margin: '0 0 4px 0', color: '#333', fontSize: '24px' }}>
-                      {stat.value}
-                    </Title>
+                    <Statistic
+                      title={stat.title}
+                      value={stat.value}
+                      prefix={
+                        React.isValidElement(stat.icon)
+                          ? React.cloneElement(stat.icon, { style: { color: stat.color } })
+                          : <span style={{ color: stat.color }}>{stat.icon}</span>
+                      }
+                      valueStyle={{ color: stat.color, fontSize: '24px' }}
+                    />
                     <Text type="secondary" style={{ fontSize: '12px' }}>
-                      {stat.title}
+                      {stat.change}
                     </Text>
-                    <div style={{
-                      width: '100%',
-                      height: '3px',
-                      backgroundColor: '#f0f0f0',
-                      borderRadius: '2px',
-                      marginTop: '8px',
-                      overflow: 'hidden'
-                    }}>
-                      <div style={{
-                        width: '70%',
-                        height: '100%',
-                        backgroundColor: stat.color,
-                        borderRadius: '2px'
-                      }} />
-                    </div>
-                    <div style={{
-                      position: 'absolute',
-                      top: '10px',
-                      right: '10px'
-                    }}>
-                      <Switch
-                        size="small"
-                        checked={stat.enabled}
-                        onChange={(checked) => handleToggleNavigation(index, checked)}
-                        checkedChildren="On"
-                        unCheckedChildren="Off"
-                      />
-                    </div>
                   </Card>
                 </Col>
               ))}
             </Row>
 
-            {/* Charts Row */}
+            {/* Third Row: Open Messages, Closed Messages, Total Messages */}
             <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
-              {/* Revenue Chart - Detailed View */}
+              {thirdRowStats.map((stat, index) => (
+                <Col xs={24} sm={12} md={8} key={index}>
+                  <Card
+                    hoverable
+                    style={{ borderRadius: '8px', cursor: 'pointer' }}
+                    onClick={stat.onClick}
+                  >
+                    <Statistic
+                      title={stat.title}
+                      value={stat.value}
+                      prefix={React.cloneElement(stat.icon, { style: { color: stat.color } })}
+                      valueStyle={{ color: stat.color, fontSize: '24px' }}
+                    />
+                    <Text type="secondary" style={{ fontSize: '12px' }}>
+                      {stat.change}
+                    </Text>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+
+            {/* Fourth Row: In-Person, Video, Home Visit */}
+            <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+              {fourthRowStats.map((stat, index) => (
+                <Col xs={24} sm={12} md={8} key={index}>
+                  <Card
+                    hoverable
+                    style={{ borderRadius: '8px', cursor: 'pointer' }}
+                    onClick={stat.onClick}
+                  >
+                    <Statistic
+                      title={stat.title}
+                      value={stat.value}
+                      prefix={React.cloneElement(stat.icon, { style: { color: stat.color } })}
+                      valueStyle={{ color: stat.color, fontSize: '24px' }}
+                    />
+                    <Text type="secondary" style={{ fontSize: '12px' }}>
+                      {stat.change}
+                    </Text>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+
+            {/* Revenue Summary */}
+            <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
               <Col xs={24} lg={16}>
                 <Card
                   title={
@@ -1007,7 +655,7 @@ const SuperAdminDashboard = () => {
                       <span>Revenue Summary</span>
                       <Select
                         value={revenueTimeframe}
-                        onChange={setRevenueTimeframe}
+                        onChange={(value: 'weekly' | 'monthly' | 'yearly') => setRevenueTimeframe(value)}
                         style={{ width: 120 }}
                       >
                         <Option value="weekly">Weekly</Option>
@@ -1016,16 +664,7 @@ const SuperAdminDashboard = () => {
                       </Select>
                     </div>
                   }
-                  // style={{ borderRadius: '8px' }}
-                  // extra={
-                  //   <Text type="secondary" style={{ fontSize: 12 }}>
-                  //     {revenueTimeframe === 'weekly'
-                  //       ? 'Showing daily revenue for this week'
-                  //       : revenueTimeframe === 'monthly'
-                  //         ? 'Showing monthly revenue for this year'
-                  //         : 'Showing yearly revenue'}
-                  //   </Text>
-                  // }
+                  style={{ borderRadius: '8px' }}
                 >
                   <div style={{ width: '100%', height: '320px' }}>
                     <ResponsiveContainer width="100%" height="100%">
@@ -1043,26 +682,33 @@ const SuperAdminDashboard = () => {
                         <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                         <YAxis
                           tick={{ fontSize: 12 }}
-                          tickFormatter={v => `₹${(v / 1000).toFixed(0)}k`}
+                          tickFormatter={(v: number) => `₹${(v / 1000).toFixed(0)}k`}
                         />
-                        {/* Custom Tooltip: only show value near dot, not in a box */}
                         <Tooltip
-                          content={({ active, payload, label }) =>
+                          content={({
+                            active,
+                            payload,
+                            label,
+                          }: {
+                            active?: boolean;
+                            payload?: TooltipPayload[];
+                            label?: string;
+                          }) =>
                             active && payload && payload.length ? (
-                              <div style={{
-                                background: 'transparent',
-                                border: 'none',
-                                boxShadow: 'none',
-                                padding: 0,
-                                margin: 0,
-                                color: '#1890ff',
-                                fontWeight: 600,
-                                fontSize: 16,
-                                pointerEvents: 'none'
-                              }}>
-                                <span>
-                                  ₹{payload[0]?.value?.toLocaleString()}
-                                </span>
+                              <div
+                                style={{
+                                  background: 'transparent',
+                                  border: 'none',
+                                  boxShadow: 'none',
+                                  padding: 0,
+                                  margin: 0,
+                                  color: '#1890ff',
+                                  fontWeight: 600,
+                                  fontSize: 16,
+                                  pointerEvents: 'none',
+                                }}
+                              >
+                                <span>₹{payload[0]?.value?.toLocaleString()}</span>
                               </div>
                             ) : null
                           }
@@ -1102,8 +748,8 @@ const SuperAdminDashboard = () => {
                         title="Highest"
                         value={
                           (revenueTimeframe === 'weekly'
-                            ? Math.max(...weeklyRevenueData.map(d => d.revenue))
-                            : Math.max(...monthlyRevenueData.map(d => d.revenue))
+                            ? Math.max(...weeklyRevenueData.map((d) => d.revenue))
+                            : Math.max(...monthlyRevenueData.map((d) => d.revenue))
                           ).toLocaleString()
                         }
                         prefix="₹"
@@ -1115,8 +761,8 @@ const SuperAdminDashboard = () => {
                         title="Lowest"
                         value={
                           (revenueTimeframe === 'weekly'
-                            ? Math.min(...weeklyRevenueData.map(d => d.revenue))
-                            : Math.min(...monthlyRevenueData.map(d => d.revenue))
+                            ? Math.min(...weeklyRevenueData.map((d) => d.revenue))
+                            : Math.min(...monthlyRevenueData.map((d) => d.revenue))
                           ).toLocaleString()
                         }
                         prefix="₹"
@@ -1127,71 +773,61 @@ const SuperAdminDashboard = () => {
                 </Card>
               </Col>
 
-                {/* Appointments Pie Chart */}
-                <Col xs={24} lg={8}>
-                  <Card title="Appointments Overview" style={{ borderRadius: '8px' }}>
+              {/* Appointments Overview */}
+              <Col xs={24} lg={8}>
+                <Card title="Appointments Overview" style={{ borderRadius: '8px' }}>
                   <div style={{ width: '100%', height: '300px' }}>
                     <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                      data={appointmentsData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={5}
-                      dataKey="value"
-                      label={false} // Hide labels on the pie
-                      >
-                      {appointmentsData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
+                      <PieChart>
+                        <Pie
+                          data={appointmentsData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={100}
+                          paddingAngle={5}
+                          dataKey="value"
+                          label={false}
+                        >
+                          {appointmentsData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
                     </ResponsiveContainer>
                   </div>
-                  {/* Custom legend below the chart */}
                   <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {appointmentsData.map((item) => (
-                    <div key={item.name} style={{ display: 'flex', alignItems: 'center', fontSize: 14 }}>
-                      <span style={{
-                      display: 'inline-block',
-                      width: 16,
-                      height: 16,
-                      backgroundColor: item.color,
-                      borderRadius: '50%',
-                      marginRight: 8,
-                      border: '1px solid #e0e0e0'
-                      }} />
-                      <span style={{ fontWeight: 500 }}>{item.name}</span>
-                      <span style={{ marginLeft: 8, color: '#888' }}>{item.value}</span>
-                    </div>
+                      <div key={item.name} style={{ display: 'flex', alignItems: 'center', fontSize: 14 }}>
+                        <span
+                          style={{
+                            display: 'inline-block',
+                            width: 16,
+                            height: 16,
+                            backgroundColor: item.color,
+                            borderRadius: '50%',
+                            marginRight: 8,
+                            border: '1px solid #e0e0e0',
+                          }}
+                        />
+                        <span style={{ fontWeight: 500 }}>{item.name}</span>
+                        <span style={{ marginLeft: 8, color: '#888' }}>{item.value}</span>
+                      </div>
                     ))}
                   </div>
-                  </Card>
-                </Col>
+                </Card>
+              </Col>
             </Row>
 
-            {/* Patient, doctor onboarding bar Chart and Sales Double Bar Chart */}
+            {/* Patient & Doctor Onboarding and Sales Progress */}
             <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
-              {/* Patient & Doctor Onboarding Bar Chart */}
               <Col xs={24} lg={12}>
-                <Card
-                  title="Patient & Doctor Onboarding"
-                  style={{ borderRadius: '8px' }}
-                >
+                <Card title="Patient & Doctor Onboarding" style={{ borderRadius: '8px' }}>
                   <div style={{ width: '100%', height: '300px' }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart
-                        data={[
-                          { name: 'Jan', patients: 30, doctors: 10 },
-                          { name: 'Feb', patients: 45, doctors: 15 },
-                          { name: 'Mar', patients: 60, doctors: 20 },
-                          { name: 'Apr', patients: 50, doctors: 18 },
-                          { name: 'May', patients: 70, doctors: 25 },
-                          { name: 'Jun', patients: 80, doctors: 30 },
-                        ]}
+                        data={onboardingData}
                         margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
                       >
                         <CartesianGrid strokeDasharray="3 3" />
@@ -1206,25 +842,12 @@ const SuperAdminDashboard = () => {
                   </div>
                 </Card>
               </Col>
-
-              {/* Sales Line Chart */}
               <Col xs={24} lg={12}>
-                <Card
-                  title="Sales Progress"
-                  style={{ borderRadius: '8px' }}
-                >
+                <Card title="Sales Progress" style={{ borderRadius: '8px' }}>
                   <div style={{ width: '100%', height: '300px' }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart
-                        data={[
-                          { name: 'Jan', online: 800, offline: 400 },
-                          { name: 'Feb', online: 1200, offline: 900 },
-                          { name: 'Mar', online: 1100, offline: 700 },
-                          { name: 'Apr', online: 1600, offline: 1000 },
-                          { name: 'May', online: 1800, offline: 1400 },
-                          { name: 'Jun', online: 2000, offline: 900 },
-                          { name: 'Jul', online: 2200, offline: 1300 },
-                        ]}
+                        data={salesData}
                         margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
                       >
                         <CartesianGrid strokeDasharray="3 3" />
@@ -1255,11 +878,8 @@ const SuperAdminDashboard = () => {
               </Col>
             </Row>
 
-
-
-            {/* Tables Row */}
+            {/* Popular Doctors and New Requests */}
             <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
-              {/* Popular Doctors */}
               <Col xs={24} lg={12}>
                 <Card title="Popular Doctors" style={{ borderRadius: '8px' }}>
                   <div style={{ overflowX: 'auto' }}>
@@ -1273,8 +893,6 @@ const SuperAdminDashboard = () => {
                   </div>
                 </Card>
               </Col>
-
-              {/* Updated Requests */}
               <Col xs={24} lg={12}>
                 <Card title="New Requests" style={{ borderRadius: '8px' }}>
                   <div style={{ overflowX: 'auto' }}>
@@ -1289,28 +907,6 @@ const SuperAdminDashboard = () => {
                 </Card>
               </Col>
             </Row>
-
-            {/* Appointments Table - Full Width */}
-            <Row gutter={[16, 16]}>
-              <Col span={24}>
-                <Card title="Appointments" style={{ borderRadius: '8px' }}>
-                  <div style={{ overflowX: 'auto' }}>
-                    <Table
-                      columns={appointmentColumns}
-                      dataSource={appointmentsList}
-                      pagination={{
-                        pageSize: 5,
-                        size: 'small',
-                        showTotal: (total, range) =>
-                          `${range[0]}-${range[1]} of ${total} appointments`
-                      }}
-                      size="small"
-                      scroll={{ x: 800 }}
-                    />
-                  </div>
-                </Card>
-              </Col>
-            </Row>
           </Content>
         </Layout>
       </Layout>
@@ -1319,5 +915,3 @@ const SuperAdminDashboard = () => {
 };
 
 export default SuperAdminDashboard;
-
-
