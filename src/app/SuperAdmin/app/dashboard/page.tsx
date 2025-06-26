@@ -336,7 +336,7 @@ const SuperAdminDashboard: React.FC = () => {
       icon: <span style={{ fontSize: 20 }}>₹</span>,
       color: '#faad14',
       change: '+5% from yesterday',
-      onClick: () => router.push('/SuperAdmin/app/today-revenue-card-info'),
+      onClick: () => router.push('/SuperAdmin/app/revenue'),
     },
     {
       title: 'This Week Revenue',
@@ -344,7 +344,7 @@ const SuperAdminDashboard: React.FC = () => {
       icon: <span style={{ fontSize: 20 }}>₹</span>,
       color: '#13c2c2',
       change: '+15% from last week',
-      onClick: () => router.push('/SuperAdmin/app/this-week-revenue-card-info'),
+      onClick: () => router.push('/SuperAdmin/app/revenue'),
     },
     {
       title: 'This Month Revenue',
@@ -352,7 +352,7 @@ const SuperAdminDashboard: React.FC = () => {
       icon: <span style={{ fontSize: 20 }}>₹</span>,
       color: '#722ed1',
       change: '+25% this month',
-      onClick: () => router.push('/SuperAdmin/app/this-month-revenue-card-info'),
+      onClick: () => router.push('/SuperAdmin/app/revenue'),
     },
   ];
 

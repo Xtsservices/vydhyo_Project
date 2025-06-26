@@ -549,7 +549,7 @@ const Header: React.FC<headerProps> = () => {
                     fontWeight: 500,
                     color: "#0a2540",
                   }}
-                  onClick={() => handleRedirect("Admin/app/login")}
+                  onClick={() => handleRedirect("LandingPage/advertisingDoctors")}
                   onMouseEnter={(e) =>
                     ((e.target as HTMLDivElement).style.backgroundColor =
                       "#f2f2f2")
