@@ -225,6 +225,7 @@ const Login = () => {
           // Store user info
           localStorage.setItem('userType', currentUserType);
           localStorage.setItem('mobile', phone);
+          localStorage.setItem('userId', userId);
           if (data.user) {
             localStorage.setItem('userData', JSON.stringify(data.user));
           }
