@@ -29,10 +29,10 @@ interface OTPValidationResponse {
 
 // User type configuration
 const USER_TYPES = {
-  "7093081512": { type: "superadmin", route: "/SuperAdmin/app/dashboard" },
+  "superadmin": { type: "superadmin", route: "/SuperAdmin/app/dashboard" },
   "7093081518": { type: "admin", route: "/Admin/app/dashboard" },
-  "8096147427": { type: "doctor", route: "/Doctor/dashboard" },
-  "8886063950": { type: "receptionist", route: "/Receptionist/dashboard" },
+  "doctor": { type: "doctor", route: "/Doctor/dashboard" },
+  "receptionist": { type: "receptionist", route: "/Receptionist/dashboard" },
   // '9490219063': { type: 'Super Admin', route: '/SuperAdmin/app/dashboard' },
 };
 
