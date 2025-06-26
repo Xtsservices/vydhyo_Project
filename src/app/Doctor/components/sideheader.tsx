@@ -36,8 +36,8 @@ const menuItemsData = [
   { key: "services", icon: <SettingOutlined />, label: "Staff Management", path: "/Doctor/staffManagement" },
   { key: "availability", icon: <DashboardOutlined />, label: "Availability", path: "/Doctor/Availability" },
   { key: "accounts", icon: <FileTextOutlined />, label: "Accounts", path: "/Doctor/accounts" },
-  { key: "invoices", icon: <FileTextOutlined />, label: "Invoices", path: "/Doctor/invoices" },
-  { key: "messages", icon: <MailOutlined />, label: "Messages", path: "/Doctor/messages" },
+  // { key: "invoices", icon: <FileTextOutlined />, label: "Invoices", path: "/Doctor/invoices" },
+  // { key: "messages", icon: <MailOutlined />, label: "Messages", path: "/Doctor/messages" },
   { key: "logout", icon: <UserOutlined />, label: "Logout", path: "/logout" },
 ];
 
@@ -106,12 +106,12 @@ export default function SiderHeader() {
         <Title level={5} style={{ color: "white", margin: 0 }}>
           Dr {userData?.firstname} {userData?.lastname}
         </Title>
-        <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: "12px", display: "block" }}>
+        {/* <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: "12px", display: "block" }}>
           {userData?.email}
         </Text>
         <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: "12px" }}>
           {userData?.mobile}
-        </Text>
+        </Text> */}
         <div style={{ marginTop: "10px" }}>
           <Tag color="blue">{userData?.specialization?.name}</Tag>
         </div>

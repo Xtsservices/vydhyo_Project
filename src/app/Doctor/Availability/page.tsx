@@ -1,5 +1,5 @@
 "use client";   
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, ChevronLeft, ChevronRight, ChevronDown, X } from 'lucide-react';
 import AppHeader from '../components/header';
 import SideHeader from '../components/sideheader';
@@ -7,12 +7,16 @@ import SideHeader from '../components/sideheader';
 const AvailabilityPage = () => {
   const [selectedAction, setSelectedAction] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  
   type Entry = {
-    id: number;
+    id: string;
+    type?: string; // 'schedule' or 'leave'
     fromDate: string;
     toDate: string;
     fromTime?: string;
     toTime?: string;
+    status?: string;
   };
 
   const [scheduleData, setScheduleData] = useState<Entry[]>([]);
@@ -25,6 +29,113 @@ const AvailabilityPage = () => {
     fromTime: '',
     toTime: ''
   });
+
+  // API Configuration
+  const API_BASE_URL = 'http://192.168.1.44:3000';
+  const STAFF_ID = localStorage.getItem('userId');
+  const token = localStorage.getItem('accessToken');
+
+  // Fetch schedules and leaves on component mount
+  useEffect(() => {
+    const fetchSchedulesAndLeaves = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(`${API_BASE_URL}/doctor/getSchedulesAndLeaves`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        
+        // Process the response data which contains both schedules and leaves in one array
+        if (result.data) {
+          const schedules = result.data.filter((item: Entry) => !item.type || item.type === 'schedule');
+          const leaves = result.data.filter((item: Entry) => item.type === 'leave');
+          
+          setScheduleData(schedules);
+          setLeaveData(leaves);
+        }
+      } catch (error) {
+        console.error('Error fetching schedules and leaves:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (STAFF_ID && token) {
+      fetchSchedulesAndLeaves();
+    }
+  }, [STAFF_ID, token]);
+
+  // API Functions
+  const createSchedule = async (scheduleData: any) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/doctor/createSchedule`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          staffId: STAFF_ID,
+          fromDate: scheduleData.fromDate,
+          toDate: scheduleData.toDate,
+          fromTime: scheduleData.fromTime,
+          toTime: scheduleData.toTime
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Error creating schedule:', error);
+      throw error;
+    }
+  };
+
+  const createLeave = async (leaveData: any) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/doctor/createLeave`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          staffId: STAFF_ID,
+          fromDate: leaveData.fromDate,
+          toDate: leaveData.toDate
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Error creating leave:', error);
+      throw error;
+    }
+  };
+
+  // Format date to YYYY-MM-DD
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toISOString().split('T')[0];
+  };
 
   // Generate calendar days for current month
   const generateCalendarDays = () => {
@@ -48,42 +159,90 @@ const AvailabilityPage = () => {
       days.push({
         day,
         dateString,
-        isScheduled: scheduleData.some(item => isDateInRange(dateString, item.fromDate, item.toDate)),
-        isLeave: leaveData.some(item => isDateInRange(dateString, item.fromDate, item.toDate))
+        isScheduled: scheduleData.some(item => 
+          isDateInRange(dateString, formatDate(item.fromDate), formatDate(item.toDate))
+        ),
+        isLeave: leaveData.some(item => 
+          isDateInRange(dateString, formatDate(item.fromDate), formatDate(item.toDate))
+        )
       });
     }
     
     return days;
   };
 
-  const isDateInRange = (date: string | number, fromDate: string | number, toDate: string | number) => {
+  const isDateInRange = (date: string, fromDate: string, toDate: string) => {
     return date >= fromDate && date <= toDate;
   };
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!formData.fromDate || !formData.toDate) return;
     
-    const newEntry = {
-      id: Date.now(),
-      fromDate: formData.fromDate,
-      toDate: formData.toDate,
-      fromTime: formData.fromTime,
-      toTime: formData.toTime
-    };
+    setIsLoading(true);
+    
+    try {
+      if (selectedAction === 'schedule') {
+        // Call API to create schedule
+        const result = await createSchedule(formData);
+        const newEntry = {
+          id: result.data.id,
+          fromDate: formData.fromDate,
+          toDate: formData.toDate,
+          fromTime: formData.fromTime,
+          toTime: formData.toTime,
+          status: 'pending'
+        };
+        setScheduleData([...scheduleData, newEntry]);
+        
+        // Show success message
+        alert('Schedule created successfully!');
+      } else if (selectedAction === 'leave') {
+        // Call API to create leave
+        const result = await createLeave(formData);
+        const newEntry = {
+          id: result.data.id,
+          type: 'leave',
+          fromDate: formData.fromDate,
+          toDate: formData.toDate,
+          status: result.data.status || 'pending'
+        };
+        setLeaveData([...leaveData, newEntry]);
+        
+        // Show success message
+        alert('Leave created successfully!');
+      }
 
-    if (selectedAction === 'schedule') {
-      setScheduleData([...scheduleData, newEntry]);
-    } else if (selectedAction === 'leave') {
-      setLeaveData([...leaveData, newEntry]);
+      // Reset form
+      setFormData({
+        fromDate: '',
+        toDate: '',
+        fromTime: '',
+        toTime: ''
+      });
+    } catch (error) {
+      console.error('Error adding entry:', error);
+      alert('Error saving data. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    // Reset form
-    setFormData({
-      fromDate: '',
-      toDate: '',
-      fromTime: '',
-      toTime: ''
-    });
+  const handleDelete = async (type: 'schedule' | 'leave', id: string) => {
+    try {
+      setIsLoading(true);
+      // You would need to implement delete API endpoints for schedules and leaves
+      // For now, we'll just update the local state
+      if (type === 'schedule') {
+        setScheduleData(scheduleData.filter(s => s.id !== id));
+      } else {
+        setLeaveData(leaveData.filter(l => l.id !== id));
+      }
+    } catch (error) {
+      console.error('Error deleting entry:', error);
+      alert('Error deleting entry. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const navigateMonth = (direction: number) => {
@@ -133,6 +292,7 @@ const AvailabilityPage = () => {
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               className="w-full px-3 py-2 bg-blue-500 text-white rounded text-sm flex items-center justify-between hover:bg-blue-600"
+              disabled={isLoading}
             >
               <span>{selectedAction ? (selectedAction === 'schedule' ? 'Schedule' : 'Leave') : 'Select Action'}</span>
               <ChevronDown className={`h-3 w-3 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
@@ -173,6 +333,7 @@ const AvailabilityPage = () => {
                 value={formData.fromDate}
                 onChange={(e) => setFormData({...formData, fromDate: e.target.value})}
                 className="w-full px-2 py-1 border rounded text-xs"
+                disabled={isLoading}
                 />
               </div>
               
@@ -183,6 +344,7 @@ const AvailabilityPage = () => {
                 value={formData.toDate}
                 onChange={(e) => setFormData({...formData, toDate: e.target.value})}
                 className="w-full px-2 py-1 border rounded text-xs"
+                disabled={isLoading}
                 />
               </div>
               </div>
@@ -196,6 +358,7 @@ const AvailabilityPage = () => {
                   value={formData.fromTime}
                   onChange={(e) => setFormData({...formData, fromTime: e.target.value})}
                   className="w-full px-2 py-1 border rounded text-xs"
+                  disabled={isLoading}
                 />
                 </div>
                 
@@ -206,6 +369,7 @@ const AvailabilityPage = () => {
                   value={formData.toTime}
                   onChange={(e) => setFormData({...formData, toTime: e.target.value})}
                   className="w-full px-2 py-1 border rounded text-xs"
+                  disabled={isLoading}
                 />
                 </div>
               </div>
@@ -213,10 +377,17 @@ const AvailabilityPage = () => {
 
               <button
               onClick={handleAdd}
-              disabled={!formData.fromDate || !formData.toDate}
-              className="w-full px-3 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600 disabled:bg-gray-300"
+              disabled={!formData.fromDate || !formData.toDate || isLoading}
+              className="w-full px-3 py-2 bg-green-500 text-white rounded text-sm hover:bg-green-600 disabled:bg-gray-300 flex items-center justify-center"
               >
-              Add
+              {isLoading ? (
+                <>
+                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></div>
+                Saving...
+                </>
+              ) : (
+                'Add'
+              )}
               </button>
             </div>
             )}
@@ -233,7 +404,7 @@ const AvailabilityPage = () => {
             </div>
             <div className="flex items-center space-x-2">
             <div className="w-3 h-3 bg-red-200 rounded"></div>
-            <span className="text-xs">Leave</span>
+            <span className="text-xs">Unavailable</span>
             </div>
             <div className="flex items-center space-x-2">
             <div className="w-3 h-3 bg-purple-200 rounded"></div>
@@ -315,17 +486,26 @@ const AvailabilityPage = () => {
             <div key={item.id} className="flex justify-between items-center p-2 bg-green-50 rounded text-xs">
               <div>
               <div className="font-medium text-green-800">
-                {item.fromDate} - {item.toDate}
+                {formatDate(item.fromDate)} - {formatDate(item.toDate)}
               </div>
               {item.fromTime && item.toTime && (
                 <div className="text-green-600">
                 {item.fromTime} - {item.toTime}
                 </div>
               )}
+              {item.status && (
+                <div className={`text-xs ${
+                  item.status === 'approved' ? 'text-green-600' : 
+                  item.status === 'rejected' ? 'text-red-600' : 'text-yellow-600'
+                }`}>
+                  Status: {item.status}
+                </div>
+              )}
               </div>
               <button
-              onClick={() => setScheduleData(scheduleData.filter(s => s.id !== item.id))}
+              onClick={() => handleDelete('schedule', item.id)}
               className="text-green-600 hover:text-green-800"
+              disabled={isLoading}
               >
               <X className="h-3 w-3" />
               </button>
@@ -346,12 +526,21 @@ const AvailabilityPage = () => {
             <div key={item.id} className="flex justify-between items-center p-2 bg-red-50 rounded text-xs">
               <div>
               <div className="font-medium text-red-800">
-                {item.fromDate} - {item.toDate}
+                {formatDate(item.fromDate)} - {formatDate(item.toDate)}
               </div>
+              {item.status && (
+                <div className={`text-xs ${
+                  item.status === 'approved' ? 'text-green-600' : 
+                  item.status === 'rejected' ? 'text-red-600' : 'text-yellow-600'
+                }`}>
+                  Status: {item.status}
+                </div>
+              )}
               </div>
               <button
-              onClick={() => setLeaveData(leaveData.filter(l => l.id !== item.id))}
+              onClick={() => handleDelete('leave', item.id)}
               className="text-red-600 hover:text-red-800"
+              disabled={isLoading}
               >
               <X className="h-3 w-3" />
               </button>
@@ -365,7 +554,6 @@ const AvailabilityPage = () => {
       </div>
     </div>
     </>
-    
   );
 };
 
