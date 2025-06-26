@@ -158,7 +158,7 @@ export default function MedicalDashboard() {
     { key: "patients", icon: <TeamOutlined />, label: "My Patients", path: "/Doctor/patients" },
     { key: "reviews", icon: <UserOutlined />, label: "Walkin Patients", path: "/Doctor/walkin" },
     { key: "services", icon: <SettingOutlined />, label: "Staff Management", path: "/Doctor/staffManagement" },
-    { key: "availability", icon: <DashboardOutlined />, label: "Availability", path: "/Doctor/availability" },
+    { key: "availability", icon: <DashboardOutlined />, label: "Availability", path: "/Doctor/Availability" },
     { key: "accounts", icon: <FileTextOutlined />, label: "Accounts", path: "/Doctor/accounts" },
     { key: "invoices", icon: <FileTextOutlined />, label: "Invoices", path: "/Doctor/invoices" },
     { key: "messages", icon: <MailOutlined />, label: "Messages", path: "/Doctor/messages" },
