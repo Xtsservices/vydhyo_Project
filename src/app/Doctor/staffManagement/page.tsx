@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Layout,
   Card,
@@ -29,7 +29,8 @@ import {
   Modal,
   Spin,
   message,
-  Upload
+  Upload,
+  Dropdown
 } from 'antd';
 import {
   UserOutlined,
@@ -47,6 +48,7 @@ import {
   MailOutlined,
   EditOutlined,
   EyeOutlined,
+  DeleteOutlined,
   MoreOutlined,
   PlusOutlined,
   UploadOutlined
@@ -60,9 +62,17 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 
 // Add Staff Modal Component
-const AddStaffModal = ({ isOpen, onCancel, onSubmit, staffType, loading }) => {
+type AddStaffModalProps = {
+  isOpen: boolean;
+  onCancel: () => void;
+  onSubmit: (staffData: Record<string, any>) => Promise<void>;
+  staffType: string;
+  loading: boolean;
+};
+
+const AddStaffModal: React.FC<AddStaffModalProps> = ({ isOpen, onCancel, onSubmit, staffType, loading }) => {
   const [form] = Form.useForm();
-  const [fileList, setFileList] = useState([]);
+  const [fileList, setFileList] = useState<any[]>([]);
 
   const handleOk = async () => {
     try {
@@ -103,7 +113,7 @@ const AddStaffModal = ({ isOpen, onCancel, onSubmit, staffType, loading }) => {
     }
   };
 
-  const validateMobile = (_, value) => {
+  const validateMobile = (_: any, value: string) => {
     if (!value) {
       return Promise.reject('Please enter mobile number');
     }
@@ -119,7 +129,7 @@ const AddStaffModal = ({ isOpen, onCancel, onSubmit, staffType, loading }) => {
     return Promise.resolve();
   };
 
-  const validateName = (_, value) => {
+  const validateName = (_: any, value: string) => {
     if (!value) {
       return Promise.reject('This field is required');
     }
@@ -135,11 +145,11 @@ const AddStaffModal = ({ isOpen, onCancel, onSubmit, staffType, loading }) => {
     return Promise.resolve();
   };
 
-  const handleUploadChange = ({ fileList: newFileList }) => {
+  const handleUploadChange = ({ fileList: newFileList }: { fileList: any[] }) => {
     setFileList(newFileList);
   };
 
-  const beforeUpload = (file) => {
+  const beforeUpload = (file: File) => {
     const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/jpg';
     if (!isJpgOrPng) {
       message.error('You can only upload JPG/PNG files!');
@@ -154,7 +164,7 @@ const AddStaffModal = ({ isOpen, onCancel, onSubmit, staffType, loading }) => {
   };
 
   // Helper function to convert file to base64 (if needed for image upload)
-  const convertFileToBase64 = (file) => {
+  const convertFileToBase64 = (file: File) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -325,42 +335,27 @@ const AddStaffModal = ({ isOpen, onCancel, onSubmit, staffType, loading }) => {
   );
 };
 
+type Staff = {
+  id: number;
+  name: string;
+  type?: string; // for table display
+  stafftype?: string; // for filtering
+  email?: string;
+  phone?: string;
+  mobile?: string;
+  joinDate?: string;
+  status?: string;
+};
+
 export default function StaffManagement() {
   const [selectedMenuItem, setSelectedMenuItem] = useState('services');
   const [selectedStaffType, setSelectedStaffType] = useState('receptionist');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [staffData, setStaffData] = useState<Staff[]>([]);
+  const [fetchLoading, setFetchLoading] = useState(false);
 
-  // Sample data for existing staff
-  const existingStaff = [
-    {
-      id: 1,
-      name: 'Sarah Johnson',
-      type: 'Receptionist',
-      email: 'sarah@clinic.com',
-      phone: '+1 234-567-8901',
-      joinDate: '2023-06-15',
-      status: 'Active'
-    },
-    {
-      id: 2,
-      name: 'Mike Davis',
-      type: 'Compounder',
-      email: 'mike@clinic.com',
-      phone: '+1 234-567-8902',
-      joinDate: '2023-08-20',
-      status: 'Active'
-    },
-    {
-      id: 3,
-      name: 'Emily Wilson',
-      type: 'Nurse',
-      email: 'emily@clinic.com',
-      phone: '+1 234-567-8903',
-      joinDate: '2023-05-10',
-      status: 'Active'
-    }
-  ];
+  
 
   const menuItems = [
     { key: 'dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
@@ -375,7 +370,7 @@ export default function StaffManagement() {
     { key: 'logout', icon: <UserOutlined />, label: 'Logout' }
   ];
 
-  const handleStaffTypeChange = (value) => {
+  const handleStaffTypeChange = (value: string) => {
     setSelectedStaffType(value);
   };
 
@@ -387,7 +382,7 @@ export default function StaffManagement() {
     setIsModalOpen(false);
   };
 
-  const handleAddStaff = async (staffData) => {
+  const handleAddStaff = async (staffData: Record<string, any>) => {
     try {
       setLoading(true);
       const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : "";
@@ -396,7 +391,7 @@ export default function StaffManagement() {
         console.log('Sending receptionist data as object:', staffData);
         
         const response = await axios.post(
-          'http://192.168.1.42:3000/doctor/createReceptionist',
+          'http://192.168.1.44:3000/doctor/createReceptionist',
           staffData, // Send as regular object
           {
             headers: {
@@ -428,14 +423,15 @@ export default function StaffManagement() {
 
       let errorMessage = 'An unexpected error occurred';
       
-      if (error.response) {
-        errorMessage = error.response.data?.message || `Server error: ${error.response.status}`;
-        if (error.response.status === 401) {
+      const err = error as any;
+      if (err.response) {
+        errorMessage = err.response.data?.message || `Server error: ${err.response.status}`;
+        if (err.response.status === 401) {
           errorMessage = 'Authentication failed. Please login again.';
-        } else if (error.response.status === 400) {
+        } else if (err.response.status === 400) {
           errorMessage = 'Invalid data provided. Please check all fields.';
         }
-      } else if (error.request) {
+      } else if (err.request) {
         errorMessage = 'Network error. Please check your internet connection.';
       }
 
@@ -454,7 +450,7 @@ export default function StaffManagement() {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
-      render: (name) => (
+      render: (name: string) => (
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <Avatar style={{ marginRight: 8 }}>{name.charAt(0)}</Avatar>
           {name}
@@ -465,7 +461,7 @@ export default function StaffManagement() {
       title: 'Staff Type',
       dataIndex: 'type',
       key: 'type',
-      render: (type) => <Tag color="blue">{type}</Tag>,
+      render: (type: string) => <Tag color="blue">{type}</Tag>,
     },
     {
       title: 'Email',
@@ -486,23 +482,78 @@ export default function StaffManagement() {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      render: (status) => (
+      render: (status: string) => (
         <Tag color={status === 'Active' ? 'green' : 'red'}>{status}</Tag>
       ),
     },
     {
       title: 'Actions',
       key: 'actions',
-      render: () => (
-        <Space>
-          <Button type="text" icon={<EditOutlined />} />
-          <Button type="text" icon={<EyeOutlined />} />
-          <Button type="text" icon={<MoreOutlined />} />
-        </Space>
-      ),
+      render: (_: any, record: Staff) => {
+        const actionMenu = (
+          <Menu>
+            <Menu.Item key="edit" onClick={() => console.log(`Edit staff: ${record.id} - ${record.name}`)}>
+              <EditOutlined /> Edit
+            </Menu.Item>
+            <Menu.Item key="view" onClick={() => console.log(`View staff: ${record.id} - ${record.name}`)}>
+              <EyeOutlined /> View
+            </Menu.Item>
+            <Menu.Item key="delete" onClick={() => console.log(`Delete staff: ${record.id} - ${record.name}`)}>
+              <DeleteOutlined /> Delete
+            </Menu.Item>
+          </Menu>
+           );
+        return (
+          <Dropdown overlay={actionMenu} trigger={['click']}>
+            <Button type="text" icon={<MoreOutlined />} />
+          </Dropdown>
+        );
     },
+  }
   ];
 
+
+  const fetchStaff = async () => {
+     try {
+        setFetchLoading(true);
+        const token =  localStorage.getItem("accessToken")
+        const response = await axios.get('http://192.168.1.44:3000/doctor/getStaffByCreator', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'userid': localStorage.getItem("userId") // Assuming userId is stored in localStorage
+          }
+        });
+
+        // Map API response to table format
+        const formattedData = response.data.data.map((staff: any, index: number) => ({
+          id: index + 1, // Generate a unique ID for table rowKey
+          name: staff.name,
+          type: staff.stafftype,
+          email: staff.email,
+          phone: staff.mobile,
+          joinDate: dayjs(staff.joinDate).format('YYYY-MM-DD'),
+          status: staff.status.charAt(0).toUpperCase() + staff.status.slice(1) // Capitalize status
+        }));
+
+        setStaffData(formattedData);
+      } catch (error) {
+        console.error('Error fetching staff:', error);
+        let errorMessage = 'Failed to fetch staff data';
+        if (typeof error === 'object' && error !== null) {
+          const err = error as any;
+          errorMessage = err.response?.data?.message || err.message || errorMessage;
+        }
+        notification.error({
+          message: 'Error Fetching Staff',
+          description: errorMessage,
+          duration: 5
+        });
+      } 
+  }
+  useEffect(() => {
+    fetchStaff()
+  },[])
   return (
     <>
       <AppHeader />
@@ -545,8 +596,8 @@ export default function StaffManagement() {
                 placeholder="Select staff type"
               >
                 <Option value="receptionist">Receptionist</Option>
-                <Option value="compounder">Compounder</Option>
-                <Option value="nurse">Nurse</Option>
+                {/* <Option value="compounder">Compounder</Option>
+                <Option value="nurse">Nurse</Option> */}
               </Select>
             </div>
             <Button 
@@ -562,37 +613,37 @@ export default function StaffManagement() {
           <Content style={{ margin: '20px', background: '#f0f2f5' }}>
             {/* Staff Overview Cards */}
             <Row gutter={[16, 16]} style={{ marginBottom: '20px' }}>
-              <Col span={6}>
+              <Col span={8}>
                 <Card>
                   <Statistic
                     title="Total Staff"
-                    value={existingStaff.length}
+                    value={staffData.length}
                     prefix={<TeamOutlined />}
                     valueStyle={{ color: '#1890ff' }}
                   />
                 </Card>
               </Col>
-              <Col span={6}>
+              <Col span={8}>
                 <Card>
                   <Statistic
                     title="Receptionists"
-                    value={existingStaff.filter(staff => staff.type === 'Receptionist').length}
+                    value={staffData.filter(staff => staff.type === 'receptionist').length}
                     prefix={<UserOutlined />}
                     valueStyle={{ color: '#52c41a' }}
                   />
                 </Card>
               </Col>
-              <Col span={6}>
+              <Col span={8}>
                 <Card>
                   <Statistic
-                    title="Nurses"
-                    value={existingStaff.filter(staff => staff.type === 'Nurse').length}
+                    title="Doctor"
+                    value={staffData.filter(staff => staff.type === 'doctor').length}
                     prefix={<UserOutlined />}
                     valueStyle={{ color: '#faad14' }}
                   />
                 </Card>
               </Col>
-              <Col span={6}>
+              {/* <Col span={6}>
                 <Card>
                   <Statistic
                     title="Compounders"
@@ -601,7 +652,7 @@ export default function StaffManagement() {
                     valueStyle={{ color: '#722ed1' }}
                   />
                 </Card>
-              </Col>
+              </Col> */}
             </Row>
 
             {/* Current Staff List */}
@@ -617,7 +668,7 @@ export default function StaffManagement() {
                   }
                 >
                   <Table
-                    dataSource={existingStaff}
+                    dataSource={staffData}
                     columns={columns}
                     rowKey="id"
                     pagination={{ 
