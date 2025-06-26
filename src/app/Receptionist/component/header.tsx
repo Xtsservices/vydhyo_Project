@@ -97,7 +97,7 @@ const AppHeader = () => {
             style={
               {
                 width: "140px",
-                height: "110px",
+                height: "140px",
                 borderRadius: "8px",
                 marginRight: "12px",
               } as CSSProperties
